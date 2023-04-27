@@ -1,0 +1,148 @@
+BUILT IN COMMANDS
+- reserved words - can't be used for any other elements
+	- make list in hashmap/hashset so can check?
+	- does this mean can't be used within commands, or can't be made
+		into actions, or both?
+	-
+
+- graphs:
+	location ALWAYS first in entities file
+		paths ALWAYS after locations
+	NB: test files will ALWAYS be in a valid format
+
+- command flexibility:
+	all commands are case insensitive
+		(incl entity names/locos/built in cmds/action triggers)
+	MUST CONTAIN TRIGGER && AT LEAST 1 SUBJECT
+	MUST cope w/ 'decorative' extra words
+		eg cmd 'chop tree with axe' === 'please chop the tree using the axe'
+	MUST cope w/ partial cmds
+		eg 'unlock door' 'unlock with key' === 'unlock door with key'
+			both give enough detail to try match action
+	CANNOT use extraneous entities (ie that don't belong)
+	action must match ALL subjects given in the command
+		ie can't 'open potion with hammer'
+		inappropriate subject always === NO match
+	ambiguous commands:
+		if >1 valid + performable action: do nothing
+		send warning
+			(eg 'there is more than one 'open' action available - which one would you like to perform?')
+	composite commands:
+		NOT supported (eg 'get axe and coin' 'get key and open door')
+		these are doing more than one thing - not allowed
+		but: can use two triggers for same exact action
+
+- error msgs:
+	won't be tested for specific messages, just return sth sensible
+
+- they will test by checking game state using cmds (look, inv etc)
+	testing will focus on 'fair and reasonable' inputs
+	so not so much pvp edges - more flexibility for valid, likely inputs
+		user must give enough info to uniquely ID the action
+		but still have flexibility about exact expression of cmd
+		ie focus on normal inputs, test cases
+
+
+
+- CAN CREATE OTHER CONFIG FILES FOR TESTING
+
+- location unique ID MUST follow 'goto'
+
+- location descriptions:
+	- ONLY when in that location + do a 'look'
+	- don't need to display when in other locos
+		and do a look - just the name
+
+- actions and entities:
+	only contain alphanumerics
+	action triggers can have spaces
+	no tests involving numbers
+
+- actions
+	- CAN accept two triggers for same action
+		eg 'chop with axe to cut down tree'
+		both == same action so this is fine
+	- BUT NOT FOR BUILT IN CMDS - IF REPEATED
+		DON'T ACCEPT? BUT THIS ISNT TESTED
+- Built in cmds are:
+	predefined, fixed, well understood
+	don't need any flexible trigger matching
+		=> 'look look' / 'goto cabin goto cabin'
+		aren't valid - 2 cmds in a sentence
+
+- entities
+	locations / artefacts / furniture/ chars/ player (special kind of char)
+	entity names (defined in config) are unique
+	only single instance of an entity within game
+
+
+- actions
+	have these elements:
+		1+ poss trigger phrases
+			any can be used to initiate action
+		1+ subject entities to act upon
+			ALL must be available b4 doing action
+		narration: human-readable explanation of what happened
+		(optional) set consumed entities
+		(optional) set of produced entities
+
+	being available means: must be in inv / in that location
+		== shortcut so can use entities in ur loco w/o picking up
+	subjects can be locos/chars/furniture which obv can't be picked up
+
+	trigger phrases NOT unique - can be multiple open actions
+		which act on diff entities
+	trigger phrases cannot contain entity names
+	(BUT overall cmds obv can)
+
+	when received:
+	- try match trigger phrase
+		remember trigger phrase can be same for diff actions
+		eg 'open trapdoor' 'open cellar' 'open treasure chest' etc
+		so each individ instance of an action is a GameAction
+		store in HashMap <String, HashSet<GameAction>>
+		ie < (trigger phrase) <((set of actions))>>
+			eg <'open', <'open door', 'open cellar'>>
+
+		so: 'cut' and 'chop' trigger maps can
+		both contain set containing 'chop down tree' action
+
+
+DESIGN:
+- get user input, tokenise(just split by whitespace?), match trigger phrase
+	- do i need to check for valid inputs?
+	- how does this actually work
+	- maybe just make it work for valid ones first ?
+
+- action class:
+	vars for triggers/subjects/consumed/produced/narration (/location?)
+	method to check if valid based on current game state
+	method to execute action
+	use Factory pattern?
+
+
+
+
+- locations:
+	paths to other locations / chars / artefacts / furniture
+
+
+- storeroom
+	not in game world - no paths to/from it
+	contains all entities with no starting loco
+	these won't enter game until an action puts them in a loco
+
+
+
+- multiple players:
+	ALL before ':' == name
+	ALL after ':' == command
+	valid names: upper/lower chars, spaces, apostrophes, hyphens
+	NO registration process for new players
+		ie if new user suddenly enters:
+		create them + place in start location
+	command MUST be applied to right player
+	==> some game state must be stored separately for players
+		eg current location, inventory - what else?
+	'look' command: SHOULD show other players in the description of a loco
+	(but not yourself)
