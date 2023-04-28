@@ -15,18 +15,22 @@ public class GameParser {
     File actionsFile;
     Parser parser;
     GameState gameState;
-    HashSet<String> reservedWords;
+    HashSet<String> basicCommands;
+    HashMap<String, GameEntity> entityList;
+    HashMap<String, GameAction> actionList;
 
     public GameParser(File entitiesFile, File actionsFile){
         this.parser = new Parser();
         this.entitiesFile = entitiesFile;
         this.actionsFile =  actionsFile;
         this.gameState = new GameState();
-        loadReservedWords();
+        this.entityList = new HashMap<>();
+        this.actionList = new HashMap<>();
+        loadBasicCommands();
     }
 
-    public void loadReservedWords(){
-        this.reservedWords.addAll(List.of(BasicCommand.basicCommands));
+    public void loadBasicCommands(){
+        this.basicCommands.addAll(List.of(HandleCommand.basicCommands));
     }
 
     public void parseEntities() {
@@ -44,6 +48,7 @@ public class GameParser {
         Graph locationGraph = entitiesGraph.getSubgraphs().get(0);
         Graph pathGraph = entitiesGraph.getSubgraphs().get(1);
 
+        // don't actually need to do this - assume they are valid
         try {
             checkForReservedWords(locationGraph);
         } catch (IOException e) {
@@ -76,11 +81,12 @@ public class GameParser {
     }
 
     public void checkForReservedWords(Graph subgraph) throws IOException {
-        for (String word: reservedWords){
+        for (String word: basicCommands){
             if (subgraph.toString().contains(word)){
                 throw new IOException("Config file contains reserved keyword.");
             }
         }
+        // check for entities and actions
     }
 
     public void parseLocations(Graph locationGraph){
@@ -101,7 +107,6 @@ public class GameParser {
         HashMap<String, Location> locationMap = new HashMap<>();
         this.gameState.getLocations().forEach(
                 location -> locationMap.put(location.getName(), location));
-
         // get path source/target location names, then add paths
         pathGraph.getEdges().forEach(
                 edge -> {
@@ -139,6 +144,16 @@ public class GameParser {
             location.addAllCharacters(subgraph);
         }
     }
+
+    public HashMap<String, GameEntity> getEntityList(){
+        return this.entityList;
+    }
+
+    public void setEntityList(){
+
+    }
+
+
 
     public void parseActions(){
 

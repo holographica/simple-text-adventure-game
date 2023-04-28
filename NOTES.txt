@@ -146,3 +146,7 @@ DESIGN:
 		eg current location, inventory - what else?
 	'look' command: SHOULD show other players in the description of a loco
 	(but not yourself)
+
+
+
+- 'cut tree chop down tree' - this is allowed as same action
