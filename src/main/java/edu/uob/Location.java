@@ -10,21 +10,21 @@ import java.util.jar.JarFile;
 public class Location extends GameEntity {
 
 //  private HashMap<String, Location> paths;
-  private HashSet<String> paths;
+  private HashSet<String> pathsFromLocation;
   private HashSet<Artefact> artefacts;
   private HashSet<GameCharacter> characters;
   private HashSet<Furniture> furniture;
 
     public Location(Node newEntity) {
         super(newEntity);
-        this.paths = new HashSet<>();
+        this.pathsFromLocation = new HashSet<>();
         this.artefacts = new HashSet<>();
         this.characters = new HashSet<>();
         this.furniture = new HashSet<>();
     }
 
     public HashSet<String> getPaths() {
-        return this.paths;
+        return this.pathsFromLocation;
     }
 
     public HashSet<Artefact> getArtefacts() {
@@ -40,7 +40,7 @@ public class Location extends GameEntity {
     }
 
     public void addPath(String path){
-        this.paths.add(path);
+        this.pathsFromLocation.add(path);
     }
 
     public void addArtefact(Artefact newArtefact){
@@ -84,15 +84,4 @@ public class Location extends GameEntity {
         subgraph.getNodes(false)
                 .forEach(this::addCharacter);
     }
-
-
-
-    // paths to other locations (bidirectional or single direction)
-    // characters at the location
-    // artefacts at the location
-    // furniture belonging
-
-
-
-
 }

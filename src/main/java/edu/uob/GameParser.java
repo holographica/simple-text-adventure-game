@@ -4,34 +4,35 @@ import com.alexmerz.graphviz.ParseException;
 import com.alexmerz.graphviz.Parser;
 import com.alexmerz.graphviz.objects.*;
 
-import java.awt.font.ShapeGraphicAttribute;
 import java.io.*;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public class GameParser {
     File entitiesFile;
     File actionsFile;
     Parser parser;
     GameState gameState;
+    HashSet<String> reservedWords;
 
     public GameParser(File entitiesFile, File actionsFile){
         this.parser = new Parser();
         this.entitiesFile = entitiesFile;
         this.actionsFile =  actionsFile;
         this.gameState = new GameState();
+        loadReservedWords();
+    }
+
+    public void loadReservedWords(){
+        this.reservedWords.addAll(List.of(BasicCommand.basicCommands));
     }
 
     public void parseEntities() {
-
         try (BufferedReader reader = new BufferedReader(new FileReader(entitiesFile))) {
             parser.parse(reader);
-        } catch (IOException e) {
+        } catch (IOException e ) {
             System.out.println("io exception");
             throw new RuntimeException(e);
         } catch (ParseException e) {
@@ -43,28 +44,56 @@ public class GameParser {
         Graph locationGraph = entitiesGraph.getSubgraphs().get(0);
         Graph pathGraph = entitiesGraph.getSubgraphs().get(1);
 
+        try {
+            checkForReservedWords(locationGraph);
+        } catch (IOException e) {
+            throw new RuntimeException("Reserved keyword found in config files.");
+        }
+
         parseLocations(locationGraph);
         addPathsToLocations(pathGraph);
 
-//        for (Graph loco : locationGraph.getSubgraphs()) {
-//            // make new location - unique id/description is always first node in subgraph
-//            Location newLocation = new Location(loco.getNodes(false).get(0));
-//            // extract attributes from that location
-//            parseLocationAttributes(newLocation, loco.getSubgraphs());
-//            // add completed location to list
-//            this.gameState.addLocation(newLocation);
-//        }
+        printLocationDetails();
+    }
 
+    public void printLocationDetails(){
+        this.gameState.getLocations().forEach(
+                location -> {
+                    System.out.println("name: " + location.getName());
+                    System.out.println("desc: " + location.getDescription());
+                    System.out.println("paths: "+ location.getPaths());
+                    for (GameEntity e: location.getArtefacts()){
+                        System.out.println("aft: "+e.getName());
+                    }
+                    for (GameEntity e: location.getCharacters()){
+                        System.out.println("char: "+e.getName());
+                    }
+                    for (GameEntity e: location.getFurniture()){
+                        System.out.println("furniture: "+e.getName());
+                    }
+                }
+        );
+    }
+
+    public void checkForReservedWords(Graph subgraph) throws IOException {
+        for (String word: reservedWords){
+            if (subgraph.toString().contains(word)){
+                throw new IOException("Config file contains reserved keyword.");
+            }
+        }
     }
 
     public void parseLocations(Graph locationGraph){
-        locationGraph.getSubgraphs().forEach(
-                location -> {
-                    Location newLocation = new Location(location.getNodes(false).get(0));
-                    parseLocationAttributes(newLocation, location.getSubgraphs());
-                    this.gameState.addLocation(newLocation);
-                }
-        );
+        boolean isFirst = false;
+        for (Graph location: locationGraph.getSubgraphs()){
+            Location newLocation = new Location(location.getNodes(false).get(0));
+            if (!isFirst){
+                isFirst=true;
+                this.gameState.setStartLocation(newLocation);
+            }
+            parseLocationAttributes(newLocation, location.getSubgraphs());
+            this.gameState.addLocation(newLocation);
+        }
     }
 
     public void addPathsToLocations(Graph pathGraph){
@@ -83,16 +112,15 @@ public class GameParser {
         );
     }
 
-
     public void parseLocationAttributes(Location location, ArrayList<Graph> locationAttributes) {
         locationAttributes.forEach(
             attribute -> {
                 parseArtefacts(location, attribute);
                 parseFurniture(location, attribute);
                 parseCharacters(location, attribute);
-        });
+            }
+        );
     }
-
 
     public void parseArtefacts(Location location, Graph subgraph){
         if (subgraph.getId().getId().equalsIgnoreCase("artefacts")){
@@ -111,6 +139,11 @@ public class GameParser {
             location.addAllCharacters(subgraph);
         }
     }
+
+    public void parseActions(){
+
+    }
+
 
 
 }

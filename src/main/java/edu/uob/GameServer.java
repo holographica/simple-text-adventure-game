@@ -15,9 +15,8 @@ public final class GameServer {
     File entitiesFile;
     File actionsFile;
     private static final char END_OF_TRANSMISSION = 4;
-
     public static void main(String[] args) throws IOException {
-        File entitiesFile = Paths.get("config" + File.separator + "basic-entities.dot").toAbsolutePath().toFile();
+        File entitiesFile = Paths.get("config" + File.separator + "extended-entities.dot").toAbsolutePath().toFile();
         File actionsFile = Paths.get("config" + File.separator + "basic-actions.xml").toAbsolutePath().toFile();
         GameServer server = new GameServer(entitiesFile, actionsFile);
         server.blockingListenOn(8888);
@@ -50,8 +49,12 @@ public final class GameServer {
     * <p>This method handles all incoming game commands and carries out the corresponding actions.
     */
     public String handleCommand(String command) {
-        GameParser gp = new GameParser(entitiesFile, actionsFile);
-        gp.parseEntities();
+
+        System.out.println("command: "+ command);
+
+
+//        GameParser gp = new GameParser(entitiesFile, actionsFile);
+//        gp.parseEntities();
 
         // TODO implement your server logic here
         if (command.contains("inventory")||command.contains("inv")){
@@ -72,6 +75,8 @@ public final class GameServer {
 
         return "";
     }
+
+
 
     //  === Methods below are there to facilitate server related operations. ===
 
