@@ -26,12 +26,12 @@ public class GameParser {
         this.gameState = new GameState();
         this.entityList = new HashMap<>();
         this.actionList = new HashMap<>();
-        loadBasicCommands();
+//        loadBasicCommands();
     }
 
-    public void loadBasicCommands(){
-        this.basicCommands.addAll(List.of(HandleCommand.basicCommands));
-    }
+//    public void loadBasicCommands(){
+//        this.basicCommands.addAll(List.of(HandleCommand.basicCommands));
+//    }
 
     public void parseEntities() {
         try (BufferedReader reader = new BufferedReader(new FileReader(entitiesFile))) {
@@ -49,16 +49,16 @@ public class GameParser {
         Graph pathGraph = entitiesGraph.getSubgraphs().get(1);
 
         // don't actually need to do this - assume they are valid
-        try {
-            checkForReservedWords(locationGraph);
-        } catch (IOException e) {
-            throw new RuntimeException("Reserved keyword found in config files.");
-        }
+//        try {
+//            checkForReservedWords(locationGraph);
+//        } catch (IOException e) {
+//            throw new RuntimeException("Reserved keyword found in config files.");
+//        }
 
         parseLocations(locationGraph);
         addPathsToLocations(pathGraph);
 
-        printLocationDetails();
+//        printLocationDetails();
     }
 
     public void printLocationDetails(){
@@ -80,14 +80,14 @@ public class GameParser {
         );
     }
 
-    public void checkForReservedWords(Graph subgraph) throws IOException {
-        for (String word: basicCommands){
-            if (subgraph.toString().contains(word)){
-                throw new IOException("Config file contains reserved keyword.");
-            }
-        }
-        // check for entities and actions
-    }
+//    public void checkForReservedWords(Graph subgraph) throws IOException {
+//        for (String word: basicCommands){
+//            if (subgraph.toString().contains(word)){
+//                throw new IOException("Config file contains reserved keyword.");
+//            }
+//        }
+//        // check for entities and actions
+//    }
 
     public void parseLocations(Graph locationGraph){
         boolean isFirst = false;
@@ -96,9 +96,16 @@ public class GameParser {
             if (!isFirst){
                 isFirst=true;
                 this.gameState.setStartLocation(newLocation);
+                // TODO
+                // SOMEHOW PUT ALL ENTITIES FROM LOCATION INTO ENTITIES LIST
+                this.entityList.put(newLocation.getName(),newLocation);
             }
             parseLocationAttributes(newLocation, location.getSubgraphs());
             this.gameState.addLocation(newLocation);
+
+            // TODO
+            // NEED TO PUT ALL ENTITIES FROM LOCATION INTO ENTITIES LIST
+            this.entityList.put(newLocation.getName(),newLocation);
         }
     }
 
@@ -115,6 +122,12 @@ public class GameParser {
                     locationMap.get(source).addPath(target);
                 }
         );
+    }
+
+    public void getEntitiesFromLocation(Location target){
+        // get all artefacts/chars/furniture at that location
+        // add it to hashmap - make sure it's not duplicated?
+
     }
 
     public void parseLocationAttributes(Location location, ArrayList<Graph> locationAttributes) {
