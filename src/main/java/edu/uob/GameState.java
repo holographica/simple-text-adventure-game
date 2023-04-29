@@ -1,5 +1,6 @@
 package edu.uob;
 
+import java.util.HashMap;
 import java.util.HashSet;
 
 public class GameState {
@@ -8,12 +9,16 @@ public class GameState {
     private HashSet<Location> locations;
     private HashSet<GameAction> actions;
     private Location startLocation;
-    private HashSet<Player> currentPlayers;
+    private HashMap<String, Player> currentPlayers;
+    private HashMap<String, GameEntity> entityList;
+    private HashMap<String, GameAction> actionList;
 
     public GameState(){
         this.locations  = new HashSet<>();
         this.actions = new HashSet<>();
-        this.currentPlayers = new HashSet<>();
+        this.currentPlayers = new HashMap<>();
+        this.entityList = new HashMap<>();
+        this.actionList = new HashMap<>();
     }
 
     public HashSet<Location> getLocations(){
@@ -31,8 +36,11 @@ public class GameState {
         return this.actions;
     }
 
-    public HashSet<Player> getCurrentPlayers(){
+    public HashMap<String, Player> getCurrentPlayers(){
         return this.currentPlayers;
+    }
+    public Player getPlayerByName(String playerName){
+        return this.currentPlayers.get(playerName);
     }
 
     public Location getStartLocation(){
@@ -48,7 +56,7 @@ public class GameState {
     }
 
     public void addPlayer(Player newPlayer){
-        this.currentPlayers.add(newPlayer);
+        this.currentPlayers.put(newPlayer.getName(), newPlayer);
     }
 
     public void setStartLocation(Location location){
