@@ -49,6 +49,8 @@ public class GameParser {
 
         parseLocations(locationGraph);
         addPathsToLocations(pathGraph);
+
+        this.gameState.setEntityList(this.getEntityList());
     }
 
     public void printLocationDetails(){

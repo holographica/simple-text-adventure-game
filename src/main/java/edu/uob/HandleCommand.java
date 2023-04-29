@@ -9,14 +9,30 @@ public class HandleCommand {
     private int commandStartIndex;
     private Player currentPlayer;
     public static final String[] basicCommandList = {"inventory", "inv","get","drop","goto","look"};
-    private HashSet<String> currentCommands;
-    private HashMap<String, GameEntity> currentSubjects;
-    private HashMap<String, GameEntity> accessibleSubjects;
-    private HashMap<String, Location> accessibleLocations;
-    private HashMap<String, GameAction> currentActions;
     private GameState gameState;
 
-    // raw command
+    // list of basic commands that were found in user input
+    private HashSet<String> targetCommands;
+
+    // list of artefacts that were found in user input
+    private HashMap<String, GameEntity> targetArtefacts;
+
+    // list of game characters that were found in user input
+    private HashMap<String, GameEntity> targetCharacters;
+
+    // list of furniture that was found in user input
+    private HashMap<String, GameEntity> targetFurniture;
+
+    // list of entities that are accessible to the current player
+    private HashMap<String, GameEntity> accessibleEntities;
+
+    // list of locations that are accessible to the current player
+    private HashMap<String, Location> accessibleLocations;
+
+    // list of actions that were found in user input
+    private HashMap<String, GameAction> targetActions;
+
+    // command handler constructor
     public HandleCommand(String command, GameState gameState) throws IOException{
         this.command = command;
         List<String> tokens = Arrays.stream(command
@@ -26,43 +42,47 @@ public class HandleCommand {
         this.gameState = gameState;
         this.tokens = new ArrayList<>(tokens);
         this.currentPlayer = gameState.getPlayerByName(this.tokens.get(0));
-        this.currentCommands = new HashSet<>();
-        this.currentSubjects = new HashMap<>();
-        this.accessibleSubjects = new HashMap<>();
-        this.currentActions = new HashMap<>();
+        this.targetCommands = new HashSet<>();
+        this.targetArtefacts = new HashMap<>();
+        this.targetCharacters = new HashMap<>();
+        this.targetFurniture = new HashMap<>();
+        this.accessibleEntities = new HashMap<>();
+        this.targetActions = new HashMap<>();
         this.commandStartIndex = this.tokens.indexOf(":");
-        setAccessibleSubjects();
+        setAccessibleEntities();
+        setAccessibleLocations();
     }
 
-    public HashMap<String, GameEntity> getAccessibleSubjects(){
-        return this.accessibleSubjects;
+    public HashMap<String, GameEntity> getAccessibleEntities(){
+        return this.accessibleEntities;
     }
 
     public HashMap<String, Location> getAccessibleLocations(){
         return this.accessibleLocations;
     }
 
-    public void setAccessibleSubjects(){
+    public void setAccessibleEntities(){
                 // add player's current inventory to list of accessible subjects
         this.currentPlayer.getInventory().values().forEach(
-                this::addAccessibleSubject
+                this::addAccessibleEntity
         );
-        // add player's current location to list of accessible subjects
+        // add entities at player's current location to list of accessible subjects
         Location currLocation = this.currentPlayer.getCurrentLocation();
-        addAccessibleSubjects(currLocation.getAccessibleSubjects());
+        addAccessibleEntities(currLocation.getAccessibleEntities());
 
+        // DO I DO THIS? DO I ADD THEM AS SUBJECTS OR LOCATIONS
         // add current location,
         // and paths from location,
         // to accessible locations?
     }
 
-    public void addAccessibleSubject(GameEntity newSubject){
-        this.accessibleSubjects.put(newSubject.getName(),newSubject);
+    public void addAccessibleEntity(GameEntity newEntity){
+        this.accessibleEntities.put(newEntity.getName(),newEntity);
     }
 
-    public void addAccessibleSubjects(HashMap<String, GameEntity> subjectList){
-        subjectList.values().forEach(
-                this::addAccessibleSubject
+    public void addAccessibleEntities(HashMap<String, GameEntity> entityList){
+        entityList.values().forEach(
+                this::addAccessibleEntity
         );
     }
 
@@ -110,17 +130,135 @@ public class HandleCommand {
             // CALL ACTION HANDLER
 
         for (String token: getTokens()){
+
+            // first check whether token is a basic command
+            // if so, add to current list of basic commands
             checkForBasicCommand(token);
 
+            // next check if token is a valid entity
+            // if so, add to correct list of current subject entities
+            checkIfEntity(token);
+
+            // next check if token is a valid action
+            // if so, add to current list of actions
         }
+
+
+        if (!targetCommands.isEmpty()) {
+            if (targetCommands.size() == 1 && targetActions.isEmpty()) {
+                    // call basic command handler
+                System.out.println("basic command");
+
+                // return?
+                // do i return a string ie 'command executed successfully'?
+                // or results of executed command
+
+            } else if (targetCommands.size() == 1){
+                    // abort
+                    // return error msg - too many commands/actions detected
+                    System.out.println("too many actions detected");
+            } else {
+                // abort
+                // return error msg - too many commands detected
+                System.out.println("too many commands detected");
+            }
+        }
+
+        if (!targetActions.isEmpty()){
+            // first make list of actions that target action triggers correspond to
+            // if size of list >1, abort and print error msg - too many actions
+
+            // otherwise if size of list ==1, this is fine
+                // execute action
+                // ensure game state, player inv, subjects consumed/produced
+                // are updated correctly
+        }
+
+        // if got to here: both basic cmd list and action lists are empty
+        // ==> abort, print error message
+
+
+
+        // now need to handle command based on rules:
+            // IF BASIC CMD LIST.SIZE == 1 && ACTION TRIGGER LIST.ISEMPTY:
+                // CALL BASIC CMD HANDLER
+            // IF BASIC CMD LIST.SIZE==1 && ACTION TRIGGER LIST !EMPTY:
+                // RETURN ERROR MSG - TOO MANY ACTIONS/COMMANDS
+            // IF BASIC CMD LIST.SIZE >1 :
+                // RETURN ERROR MSG - TOO MANY COMMANDS
+            // IF BASIC CMD LIST.ISEMPTY && ACTION LIST.SIZE ! EMPTY
+                // CALL ACTION HANDLER
+
+
+    }
+
+    public void basicCommandHandler(){
+        // should have already checked that size of basic cmd list ==1
+        // also should have already checked if action list is empty
+        // so:
+
+        // call specific command (look, goto etc) handler based on
+        // command found in basic cmd list
+
+        // in each basic cmd handler:
+            // check if any extraneous entities in entity list
+                // if so: abort, print error msg
+            // check if all required subjects are present
+                // if not: abort, print error msg
+            // check if consumed entities are present
+                // if not: abort, print error msg
+
+            // then: execute command
+            // ensure produced/consumed subjects are handled correctly
+            // and added/removed from correct lists / player inventory
+
+
+
+
+
     }
 
 
 
+    public void checkIfEntity(String token){
+        checkIfArtefact(token);
+        checkIfCharacter(token);
+        checkIfFurniture(token);
+    }
+
+    public void checkIfArtefact(String token){
+        gameState.getAllArtefacts().values().forEach(
+                artefact -> {
+                    if (artefact.getName().equals(token)){
+                        this.targetArtefacts.put(artefact.getName(),artefact);
+                    }
+                }
+        );
+    }
+
+    public void checkIfCharacter(String token){
+        gameState.getAllCharacters().values().forEach(
+                gameChar -> {
+                    if (gameChar.getName().equals(token)){
+                        this.targetArtefacts.put(gameChar.getName(),gameChar);
+                    }
+                }
+        );
+    }
+
+    public void checkIfFurniture(String token){
+        gameState.getAllFurniture().values().forEach(
+                furniture -> {
+                    if (furniture.getName().equals(token)){
+                        this.targetArtefacts.put(furniture.getName(),furniture);
+                    }
+                }
+        );
+    }
 
     public void checkForBasicCommand(String token){
         if (Arrays.asList(basicCommandList).contains(token)){
-            currentCommands.add(token);
+            targetCommands.add(token);
         }
     }
 
@@ -142,13 +280,13 @@ public class HandleCommand {
 
 //    }
 
-    public String handleGotoCommand(){
-        // CHECK FOR ACTION TRIGGER WORDS?
-        // NOT HERE - PROB IN BASIC COMMAND CHECKER
-
-        // CHECK FOR EXTRANEOUS SUBJECTS?
-
-    }
+//    public String handleGotoCommand(){
+//        // CHECK FOR ACTION TRIGGER WORDS?
+//        // NOT HERE - PROB IN BASIC COMMAND CHECKER
+//
+//        // CHECK FOR EXTRANEOUS SUBJECTS?
+//
+//    }
 
 
 

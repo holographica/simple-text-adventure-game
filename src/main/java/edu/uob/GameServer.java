@@ -52,8 +52,8 @@ public final class GameServer {
 
         System.out.println("command: "+ command);
 
-//        GameParser gp = new GameParser(entitiesFile, actionsFile);
-//        gp.parseEntities();
+        GameParser gp = new GameParser(entitiesFile, actionsFile);
+        gp.parseEntities();
 
         // TODO implement your server logic here
         if (command.contains("inventory")||command.contains("inv")){

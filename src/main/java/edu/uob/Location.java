@@ -36,18 +36,18 @@ public class Location extends GameEntity {
         return this.furniture;
     }
 
-    public HashMap<String, GameEntity> getAccessibleSubjects(){
-        HashMap<String, GameEntity> accessibleSubjects = new HashMap<>();
+    public HashMap<String, GameEntity> getAccessibleEntities(){
+        HashMap<String, GameEntity> accessibleEntities = new HashMap<>();
         this.getArtefacts().values().forEach(
-                artefact -> accessibleSubjects.put(artefact.getName(),artefact)
+                artefact -> accessibleEntities.put(artefact.getName(),artefact)
         );
         this.getCharacters().values().forEach(
-                gameChar -> accessibleSubjects.put(gameChar.getName(),gameChar)
+                gameChar -> accessibleEntities.put(gameChar.getName(),gameChar)
         );
         this.getFurniture().values().forEach(
-                furniture -> accessibleSubjects.put(furniture.getName(),furniture)
+                furniture -> accessibleEntities.put(furniture.getName(),furniture)
         );
-        return accessibleSubjects;
+        return accessibleEntities;
     }
 
     public void addPath(Location pathTo){

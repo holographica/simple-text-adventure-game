@@ -6,12 +6,16 @@ import java.util.HashSet;
 public class GameState {
 
     // (is it fine to use hashsets? better/worse than arraylist?)
+    // maybe use hashmap instead??
     private HashSet<Location> locations;
     private HashSet<GameAction> actions;
     private Location startLocation;
     private HashMap<String, Player> currentPlayers;
     private HashMap<String, GameEntity> entityList;
     private HashMap<String, GameAction> actionList;
+
+    // DO I NEED INDIVIDUAL LISTS OF ARTEFACTS/CHARS/FURNITURE/LOCATIONS?
+    // or can i just get them when needed, using methods?
 
     public GameState(){
         this.locations  = new HashSet<>();
@@ -47,6 +51,42 @@ public class GameState {
         return this.startLocation;
     }
 
+    public HashMap<String, GameEntity> getAllArtefacts(){
+        HashMap<String,GameEntity> artefactList = new HashMap<>();
+        this.entityList.values().forEach(
+                entity -> {
+                    if (entity instanceof Artefact){
+                        artefactList.put(entity.getName(),entity);
+                    }
+                }
+        );
+        return artefactList;
+    }
+
+    public HashMap<String, GameEntity> getAllCharacters(){
+        HashMap<String,GameEntity> charList = new HashMap<>();
+        this.entityList.values().forEach(
+                entity -> {
+                    if (entity instanceof GameCharacter){
+                        charList.put(entity.getName(),entity);
+                    }
+                }
+        );
+        return charList;
+    }
+
+    public HashMap<String, GameEntity> getAllFurniture(){
+        HashMap<String,GameEntity> furnitureList = new HashMap<>();
+        this.entityList.values().forEach(
+                entity -> {
+                    if (entity instanceof Furniture){
+                        furnitureList.put(entity.getName(),entity);
+                    }
+                }
+        );
+        return furnitureList;
+    }
+
     public void addLocation(Location newLocation){
         this.locations.add(newLocation);
     }
@@ -61,6 +101,15 @@ public class GameState {
 
     public void setStartLocation(Location location){
         this.startLocation = location;
+    }
+
+    public void setEntityList(HashMap<String, GameEntity> entityList){
+        this.entityList = entityList;
+        getAllArtefacts();
+    }
+
+    public void setActionList(HashMap<String, GameAction> actionList){
+        this.actionList = actionList;
     }
 
 
