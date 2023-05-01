@@ -9,8 +9,9 @@ public class GameState {
     // maybe use hashmap instead??
     private HashSet<Location> locations;
     private HashSet<GameAction> actions;
-    private Location startLocation;
-    private HashMap<String, Player> currentPlayers;
+    private static Location startLocation;
+    private HashMap<String, Player> playerList;
+    private Player currentPlayer;
     private HashMap<String, GameEntity> entityList;
     private HashMap<String, GameAction> actionList;
 
@@ -20,7 +21,7 @@ public class GameState {
     public GameState(){
         this.locations  = new HashSet<>();
         this.actions = new HashSet<>();
-        this.currentPlayers = new HashMap<>();
+        this.playerList = new HashMap<>();
         this.entityList = new HashMap<>();
         this.actionList = new HashMap<>();
     }
@@ -40,47 +41,56 @@ public class GameState {
         return this.actions;
     }
 
-    public HashMap<String, Player> getCurrentPlayers(){
-        return this.currentPlayers;
+    public HashMap<String, Player> getPlayerList(){
+        return this.playerList;
     }
     public Player getPlayerByName(String playerName){
-        return this.currentPlayers.get(playerName);
+        return this.playerList.get(playerName);
+    }
+    public Player getCurrentPlayer() { return this.currentPlayer; }
+
+    public static Location getStartLocation(){
+        return startLocation;
     }
 
-    public Location getStartLocation(){
-        return this.startLocation;
-    }
 
-    public HashMap<String, GameEntity> getAllArtefacts(){
-        HashMap<String,GameEntity> artefactList = new HashMap<>();
+
+    // TODO
+    // TODO
+    // NB: changed 3 funcs below to return <String, Artefact> not <String, GameEntity>
+    // so have to do explicit cast
+    // is this bad? change back if necessary
+
+    public HashMap<String, Artefact> getAllArtefacts(){
+        HashMap<String,Artefact> artefactList = new HashMap<>();
         this.entityList.values().forEach(
                 entity -> {
                     if (entity instanceof Artefact){
-                        artefactList.put(entity.getName(),entity);
+                        artefactList.put(entity.getName(), (Artefact) entity);
                     }
                 }
         );
         return artefactList;
     }
 
-    public HashMap<String, GameEntity> getAllCharacters(){
-        HashMap<String,GameEntity> charList = new HashMap<>();
+    public HashMap<String, GameCharacter> getAllCharacters(){
+        HashMap<String,GameCharacter> charList = new HashMap<>();
         this.entityList.values().forEach(
                 entity -> {
                     if (entity instanceof GameCharacter){
-                        charList.put(entity.getName(),entity);
+                        charList.put(entity.getName(), (GameCharacter) entity);
                     }
                 }
         );
         return charList;
     }
 
-    public HashMap<String, GameEntity> getAllFurniture(){
-        HashMap<String,GameEntity> furnitureList = new HashMap<>();
+    public HashMap<String, Furniture> getAllFurniture(){
+        HashMap<String,Furniture> furnitureList = new HashMap<>();
         this.entityList.values().forEach(
                 entity -> {
                     if (entity instanceof Furniture){
-                        furnitureList.put(entity.getName(),entity);
+                        furnitureList.put(entity.getName(), (Furniture) entity);
                     }
                 }
         );
@@ -96,8 +106,9 @@ public class GameState {
     }
 
     public void addPlayer(Player newPlayer){
-        this.currentPlayers.put(newPlayer.getName(), newPlayer);
+        this.playerList.put(newPlayer.getName(), newPlayer);
     }
+    public void setCurrentPlayer(Player currPlayer) { this.currentPlayer = currPlayer; }
 
     public void setStartLocation(Location location){
         this.startLocation = location;

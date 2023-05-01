@@ -32,6 +32,12 @@ public class GameParser {
         this.actionList = new HashMap<>();
     }
 
+
+    public GameState getGameState(){
+        parseEntities();
+        return this.gameState;
+    }
+
     public void parseEntities() {
         try (BufferedReader reader = new BufferedReader(new FileReader(entitiesFile))) {
             parser.parse(reader);
@@ -144,7 +150,7 @@ public class GameParser {
     }
 
     public HashMap<String, GameEntity> getEntityList(){
-        return this.entityList;
+        return this. entityList;
     }
 
 

@@ -9,11 +9,15 @@ import java.io.OutputStreamWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /** This class implements the STAG server. */
 public final class GameServer {
-    File entitiesFile;
-    File actionsFile;
+    private final File entitiesFile;
+    private final File actionsFile;
+    private GameState gameState;
     private static final char END_OF_TRANSMISSION = 4;
     public static void main(String[] args) throws IOException {
         File entitiesFile = Paths.get("config" + File.separator + "extended-entities.dot").toAbsolutePath().toFile();
@@ -38,8 +42,10 @@ public final class GameServer {
     public GameServer(File entitiesFile, File actionsFile) {
         this.entitiesFile = entitiesFile;
         this.actionsFile = actionsFile;
-        // TODO implement your server logic here
 
+        GameParser gp = new GameParser(entitiesFile, actionsFile);
+//        gp.parseEntities();
+        this.gameState = gp.getGameState();
     }
 
     /**
@@ -50,30 +56,54 @@ public final class GameServer {
     */
     public String handleCommand(String command) {
 
-        System.out.println("command: "+ command);
+        // set current player
 
-        GameParser gp = new GameParser(entitiesFile, actionsFile);
-        gp.parseEntities();
+        // TODO
+        // CLEAN UP AND ENCAPSULATE BELOW INTO METHOD
 
-        // TODO implement your server logic here
-        if (command.contains("inventory")||command.contains("inv")){
-            // list artefacts being carried by player
+
+        StringBuilder strb = new StringBuilder();
+        List<String> temp = Arrays.stream(command.split(":")).toList();
+        strb.append(temp.get(0));
+         String name = strb.toString();
+        if (this.gameState.getPlayerByName(name)==null){
+            Player newPlayer = new Player(name, "Player called"+name);
+            this.gameState.addPlayer(newPlayer);
+            this.gameState.setCurrentPlayer(newPlayer);
         }
-        if (command.contains("get")){
-            // pick up a specified artefact from the current location and adds it into player's inventory
-        }
-        if (command.contains("drop")){
-            // put down an artefact from player's inventory and places it into the current location
-        }
-        if (command.contains("goto")){
-            // moves the player to the specified location (if there is a path to that location)
-        }
-        if (command.contains("look")){
-            // print names and descriptions of entities in the current location and lists paths to other locations
+        else {
+            this.gameState.setCurrentPlayer(this.gameState.getPlayerByName(name));
         }
 
-        return "";
+        Artefact aft = this.gameState.getAllArtefacts().get("log");
+        this.gameState.getCurrentPlayer().addToInventory(aft);
+
+        CommandHandler handler = new CommandHandler(command, this.gameState);
+        return handler.parseCommand();
+//
+//        // TODO implement your server logic here
+//        if (command.contains("inventory")||command.contains("inv")){
+//            // list artefacts being carried by player
+//        }
+//        if (command.contains("get")){
+//            // pick up a specified artefact from the current location and adds it into player's inventory
+//        }
+//        if (command.contains("drop")){
+//            // put down an artefact from player's inventory and places it into the current location
+//        }
+//        if (command.contains("goto")){
+//            // moves the player to the specified location (if there is a path to that location)
+//        }
+//        if (command.contains("look")){
+//            // print names and descriptions of entities in the current location and lists paths to other locations
+//        }
+//
+//        return "";
     }
+
+        public GameState getGameState(){
+            return this.gameState;
+        }
 
 
 

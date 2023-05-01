@@ -6,25 +6,42 @@ import java.util.HashSet;
 public class Player extends GameCharacter{
 
     private HashMap<String, Artefact> inventory;
-    private Location currentLocation;
+    private String currentLocation;
+    private int playerHealth;
 
     public Player(String name, String description) {
         super(name, description);
+        this.currentLocation = GameState.getStartLocation().getName();
+        this.playerHealth=3;
+        this.inventory = new HashMap<>();
     }
 
     public HashMap<String, Artefact> getInventory(){
         return this.inventory;
     }
 
-    public Location getCurrentLocation(){
+    public String getCurrentLocation(){
         return this.currentLocation;
+    }
+
+    public int getPlayerHealth(){
+        return this.playerHealth;
     }
 
     public void addToInventory(Artefact newArtefact){
         this.inventory.put(newArtefact.getName(), newArtefact);
     }
-
-    public void setCurrentLocation(Location newLocation){
+    // TODO
+    //  CHANGED THIS: USED TO TAKE LOCATION AS ARG
+    //  IF RUN INTO PROBLEMS: CHANGE BACK!!
+    public void setCurrentLocation(String newLocation){
         this.currentLocation = newLocation;
+    }
+
+    public void increasePlayerHealth(){
+        this.playerHealth++;
+    }
+    public void decreasePlayerHealth(){
+        this.playerHealth--;
     }
 }

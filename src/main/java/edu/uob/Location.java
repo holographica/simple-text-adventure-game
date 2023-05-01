@@ -6,11 +6,10 @@ import java.util.HashMap;
 
 public class Location extends GameEntity {
 
-//  private HashMap<String, Location> paths;
-  private HashMap<String, Location> pathsFromLocation;
-  private HashMap<String, Artefact> artefacts;
-  private HashMap<String, GameCharacter> characters;
-  private HashMap<String, Furniture> furniture;
+    private HashMap<String, Location> pathsFromLocation;
+    private HashMap<String, Artefact> artefacts;
+    private HashMap<String, GameCharacter> characters;
+    private HashMap<String, Furniture> furniture;
 
     public Location(Node newEntity) {
         super(newEntity);
@@ -94,5 +93,9 @@ public class Location extends GameEntity {
     public void addAllCharacters(Graph subgraph){
         subgraph.getNodes(false)
                 .forEach(this::addCharacter);
+    }
+
+    public void removeArtefact(String artefactName){
+        this.artefacts.remove(artefactName);
     }
 }

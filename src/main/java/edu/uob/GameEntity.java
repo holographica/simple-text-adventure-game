@@ -8,8 +8,8 @@ public abstract class GameEntity
     private String description;
 
     public GameEntity(Node newEntity){
-        this.setName(newEntity.getId().getId());
-        this.setDescription(newEntity.getAttribute("description"));
+        this.setName(newEntity.getId().getId().toLowerCase());
+        this.setDescription(newEntity.getAttribute("description").toLowerCase());
     };
 
     public GameEntity(String name, String description)
