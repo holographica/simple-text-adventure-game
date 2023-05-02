@@ -34,7 +34,7 @@ public class CommandHandler {
     private HashMap<String, Location> accessibleLocations;
 
     // list of actions that were found in user input
-    private HashMap<String, GameAction> targetActions;
+    private HashMap<String, HashSet<GameAction>> targetActions;
 
     private String responseString;
 
@@ -52,7 +52,6 @@ public class CommandHandler {
             commandBuilder.append(token).append(" ");
         }
         this.command = commandBuilder.toString();
-
         this.targetCommands = new HashSet<>();
         this.targetArtefacts = new HashSet<>();
         this.targetCharacters = new HashSet<>();
@@ -75,11 +74,9 @@ public class CommandHandler {
     public void setAccessibleEntities(){
         this.accessibleEntities = new HashMap<>();
         String locationName = this.currentPlayer.getCurrentLocation();
-
         // add entities at player's current location to list of accessible subjects
         Location currLocation = this.gameState.getLocationByName(locationName);
         this.addAccessibleEntities(currLocation.getAccessibleEntities());
-
         // add player's current inventory to list of accessible subjects
         for (Artefact e: this.currentPlayer.getInventory().values()){
             this.addAccessibleEntity(e);
@@ -125,8 +122,6 @@ public class CommandHandler {
         return this.responseString;
     }
     public String parseCommand(){
-        // DO I SET CURRENT PLAYER HERE??
-
         // CHECK FOR BASIC COMMANDS AND ADD THEM TO BASIC COMMAND LIST
         // IF LIST.SIZE == 1, CALL BASIC COMMAND HANDLER
 
@@ -157,18 +152,16 @@ public class CommandHandler {
             // TODO
             // next check if token is a valid action trigger phrase
             // ie matches any of the keys in actions hashmap
-            // if so, add to current list of actions
-
+            // if so, add all actions matching that trigger to set of target actions
+            checkIfAction(token);
         }
+        checkMultipleWordTriggers();
 
-        // TODO
-        // finally check whether full command string
-        // .contains any of the strings in actions hashmap
-
-
+//        System.out.println("actions: " + gameState.getActions());
 
 
         if (!targetCommands.isEmpty()) {
+            System.out.println("at least 1 basic command");
             if (targetCommands.size() == 1 && targetActions.isEmpty()) {
                     // call basic command handler
                 basicCommandHandler();
@@ -180,22 +173,111 @@ public class CommandHandler {
             } else if (targetCommands.size() == 1){
                     // abort
                     // return error msg - too many commands/actions detected
-                    addToResponseString("too many basic commands/actions detected");
+                    setResponseString("too many basic commands/actions detected");
+                    return responseString;
             } else {
                 // abort
                 // return error msg - too many commands detected
-                addToResponseString("too many basic commands detected");
+                setResponseString("too many basic commands detected");
+                return responseString;
             }
         }
 
-        if (!targetActions.isEmpty()){
+        if (!targetActions.isEmpty()) {
+//            System.out.println("TARGET ACTIONS NOT EMPTY");
+            HashSet<GameAction> uniqueActions = new HashSet<>();
+            // go through each key in the hashmap
+            this.targetActions.forEach(
+                (trigger, actionSet) -> {
+//                    System.out.println("trigger ie keyphrase: " + trigger + "  | actionset: "+ actionSet + "\n");
+                    actionSet.forEach(
+                        action -> {
+//                            System.out.println("first action in set:");
+                            // get required entities
+                            // get accessible entities
+                            // compare them
+//                            System.out.println("required: " + action.getRequiredEntities());
+//                            System.out.println("accessible: " + this.accessibleEntities);
+
+                            // if all required entities are present in accessible entities
+                            // this is good
+                            // otherwise error
+                            HashMap<String, GameEntity> requiredEntities = action.getRequiredEntities();
+                            if (!accessibleEntities.keySet().containsAll(requiredEntities.keySet())){
+                                System.out.println("don't have access to required entities");
+                                actionSet.remove(action);
+                            }
+                        }
+                    );
+//                    System.out.println("HAVE ACCESS");
+//                    System.out.println("total actions:" );
+//                    for (GameAction action: actionSet){
+//                        System.out.println(action.getTriggers());
+//                    }
+                    if (actionSet.isEmpty()) {
+//                        System.out.println("empty set - removed " + trigger);
+                        this.targetActions.remove(trigger);
+                    }
+                    else if (actionSet.size() > 1) {
+                        setResponseString("Error: too many possible actions");
+                    }
+                    else {
+                        uniqueActions.addAll(actionSet);
+                    }
+//
+//
+//                    System.out.println("target actiohs size: " + targetActions.size());
+//                    for (String str: targetActions.keySet()){
+//                        System.out.println("key: "+str);
+//                    }
+//                    System.out.println("\n");
+
+                    // if action set size >1 , error, return
+                    // if set size ==0, remove from hashmap
+                    // if ==1, do nothing
+                }
+            );
+            if (uniqueActions.size()==1){
+                System.out.println("target actions size 1!!");
+
+
+
+
+                // execute action here
+                // update gamestate
+                // consume/produce objects as necessary
+            }
+            else {
+                setResponseString("Error: valid commands require exactly one action");
+            }
+        }
+
+
+            // for each key, go through hashset
+            // for each action in set, check whether the required entities are accessible
+            // if they are not, remove this action from hashset
+
+            // if the ending set size >1, print error messsage, return
+
+            // if ending set size ==0 , remove key from hashmap
+
+            // if ending set size ==1: do nothing
+
+            // after going through all keys:
+                // if targetActions.size == 1:
+                // execute action
+                // update game state, player inv, consumed/produced subjects etc
+
+
+
+
+
             // first make list of actions that target action triggers correspond to
             // if size of list >1, abort and print error msg - too many actions
             // otherwise if size of list ==1, this is fine
                 // execute action
                 // ensure game state, player inv, subjects consumed/produced
                 // are updated correctly
-        }
 
         // if got to here: both basic cmd list and action lists are empty
         // ==> abort, print error message
@@ -214,6 +296,61 @@ public class CommandHandler {
                 // CALL ACTION HANDLER
 
         return this.responseString;
+    }
+
+    public void basicCommandHandler(){
+        // should have already checked that size of basic cmd list ==1
+        // also should have already checked if action list is empty
+        // things MUST be in right order
+
+
+        // TODO: should now check whether subject list ==1 or 0
+
+        // TODO: NEED TO CHECK THAT ENTITIES COME AFTER COMMAND
+        //  IF NOT CORRECT ORDER - COMMAND IS INVALID
+
+        // so: for look, inv: all maps must be empty
+
+        // below:
+        // checks if 0 target entities
+        // then looks for basic command
+        // if found in target cmds list - execute cmd
+        // otherwise add error msg and return
+        if (noTargetEntities()){
+            System.out.println("NO TARGETS");
+            handleNoEntityCommand();
+            return;
+        }
+
+        if (singleTargetLocation()){
+            System.out.println("ONE LOCO");
+            handleGoto();
+            return;
+        }
+
+        if (singleTargetArtefact()){
+            System.out.println("ONE ARTEFACT");
+            handleSingleEntityCommand();
+            return;
+        }
+
+        setResponseString("Error: invalid command detected");
+
+
+        // call specific command (look, goto etc) handler based on
+        // command found in basic cmd list
+
+        // in each basic cmd handler:
+            // check if any extraneous entities in entity list
+                // if so: abort, print error msg
+            // check if all required subjects are present
+                // if not: abort, print error msg
+            // check if consumed entities are present
+                // if not: abort, print error msg
+
+            // then: execute command
+            // ensure produced/consumed subjects are handled correctly
+            // and added/removed from correct lists / player inventory
     }
 
     public boolean noTargetEntities(){
@@ -241,71 +378,6 @@ public class CommandHandler {
         return false;
     }
 
-    public void basicCommandHandler(){
-        // should have already checked that size of basic cmd list ==1
-        // also should have already checked if action list is empty
-        // things MUST be in right order
-
-
-        // TODO: should now check whether subject list ==1 or 0
-
-        // TODO: NEED TO CHECK THAT ENTITIES COME AFTER COMMAND
-        //  IF NOT CORRECT ORDER - COMMAND IS INVALID
-
-        // so: for look, inv: all maps must be empty
-
-        // below:
-        // checks if 0 target entities
-        // then looks for basic command
-        // if found in target cmds list - execute cmd
-        // otherwise add error msg and return
-        if (noTargetEntities()){
-            handleNoEntityCommand();
-            return;
-        }
-
-        if (singleTargetLocation()){
-            handleGoto();
-            return;
-        }
-
-        if (singleTargetArtefact()){
-            handleSingleEntityCommand();
-        }
-
-
-        // NB: THEY DON'T WANT LOOK LOOK/GOTO GOTO
-        // I'M USING HASHSET FOR COMMANDS - IS THIS A PROBLEM
-
-
-        if (targetCommands.contains("get")){
-            System.out.println("you just got this!");
-        }
-        // call specific command (look, goto etc) handler based on
-        // command found in basic cmd list
-
-        // in each basic cmd handler:
-            // check if any extraneous entities in entity list
-                // if so: abort, print error msg
-            // check if all required subjects are present
-                // if not: abort, print error msg
-            // check if consumed entities are present
-                // if not: abort, print error msg
-
-            // then: execute command
-            // ensure produced/consumed subjects are handled correctly
-            // and added/removed from correct lists / player inventory
-    }
-
-    // CONTAINS NO SUBJECTS
-    public void handleInv(){
-        this.responseString += "Your inventory contains: ";
-        for (Artefact aft: this.getCurrentPlayer().getInventory().values() ){
-            addToResponseString(aft.getName() + ", ");
-        }
-    }
-
-
     public void handleNoEntityCommand(){
         if (targetCommands.contains("look")){
             handleLook();
@@ -314,7 +386,7 @@ public class CommandHandler {
             handleInv();
         }
         else {
-            addToResponseString("Error: invalid command detected");
+            setResponseString("Error: invalid command detected");
         }
     }
 
@@ -327,6 +399,33 @@ public class CommandHandler {
         }
         else {
             setResponseString("Error: invalid command detected");
+        }
+    }
+
+    public void handleLook(){
+        Location currLocation = gameState.getLocationByName(gameState.getCurrentPlayer().getCurrentLocation());
+        addToResponseString("You are currently in: ");
+        addToResponseString(currLocation.getName() + " - ");
+        addToResponseString(currLocation.getDescription());
+        addToResponseString("\nYou can see: ");
+        currLocation.getAccessibleEntities().values().forEach(
+                tempEntity -> {
+                    addToResponseString(tempEntity.getName() + " - ");
+                    addToResponseString(tempEntity.getDescription() + ", ");
+                }
+        );
+        addToResponseString("\nYou can see paths to: ");
+        currLocation.getPaths().values().forEach(
+                path -> {
+                    addToResponseString(path.getName()+ ", ");
+                }
+        );
+    }
+
+    public void handleInv(){
+        this.responseString += "Your inventory contains: ";
+        for (Artefact aft: this.getCurrentPlayer().getInventory().values() ){
+            addToResponseString(aft.getName() + ", ");
         }
     }
 
@@ -360,6 +459,7 @@ public class CommandHandler {
             }
             this.gameState.getCurrentPlayer().addToInventory(targetArtefact);
             currLocation.removeArtefact(targetArtefact.getName());
+            setResponseString("You picked up a "+targetArtefact.getName());
         } else {
             if (!this.getCurrentPlayer().getInventory().containsKey(targetArtefact.getName())) {
                 setResponseString("Error: you can't access this artefact");
@@ -367,27 +467,8 @@ public class CommandHandler {
             }
             this.gameState.getCurrentPlayer().removeFromInventory(targetArtefact);
             currLocation.addArtefact(targetArtefact);
+            setResponseString("You dropped a "+targetArtefact.getName());
         }
-    }
-
-    public void handleLook(){
-        Location currLocation = gameState.getLocationByName(gameState.getCurrentPlayer().getCurrentLocation());
-        addToResponseString("You are currently in: ");
-        addToResponseString(currLocation.getName() + " - ");
-        addToResponseString(currLocation.getDescription());
-        addToResponseString("\nYou can see: ");
-        currLocation.getAccessibleEntities().values().forEach(
-                tempEntity -> {
-                    addToResponseString(tempEntity.getName() + " - ");
-                    addToResponseString(tempEntity.getDescription() + ", ");
-                }
-        );
-        addToResponseString("\nYou can see paths to: ");
-        currLocation.getPaths().values().forEach(
-                path -> {
-                    addToResponseString(path.getName()+ ", ");
-                }
-        );
     }
 
     public void addToResponseString(String toAppend){
@@ -406,13 +487,47 @@ public class CommandHandler {
         checkEntity(token, this.targetLocations, name -> this.gameState.getLocations().get(name));
     }
 
-    public <T extends GameEntity> void checkEntity(String token, HashSet<T> targetSet, EntityChecker<T> entityChecker) {
+    public void checkIfAction(String triggerPhrase){
+        if (this.gameState.getActions().containsKey(triggerPhrase)){
+            System.out.println("found action key");
+            System.out.println("PHRASEEEE: "+ triggerPhrase + "\n\n");
+            if (targetActions.containsKey(triggerPhrase)){
+                setResponseString("Error: duplicate actions found in command");
+            }
+            else {
+                targetActions.put(triggerPhrase, gameState.getActions().get(triggerPhrase));
+            }
+        }
+    }
+
+    public void checkMultipleWordTriggers(){
+        gameState.getActions().forEach(
+            (trigger, actionSet) -> {
+
+                // TODO
+                //  this currently checks for spaces in the triggers it's checking
+                //  so to avoid probs with 'cut' vs 'cut down'
+                //   might have to remove if it causes issues
+                if (command.contains(trigger) && trigger.contains(" ")){
+                    if (this.targetActions.containsKey(trigger)){
+                        setResponseString("Error: multiple actions found in command");
+                    }
+                    else {
+                        this.targetActions.put(trigger, gameState.getActionsByTrigger(trigger));
+                    }
+                }
+            }
+        );
+    }
+
+    public <T extends GameEntity> void checkEntity(String token, HashSet<T> entitySet, EntityChecker<T> entityChecker) {
         T entity = entityChecker.getEntityByName(token);
         if (entity != null) {
-            if (targetSet.contains(entity)) {
-                addToResponseString("Error: duplicate subjects found in command");
-            } else {
-                targetSet.add(entity);
+            if (entitySet.contains(entity)) {
+                setResponseString("Error: duplicate subjects found in command");
+            }
+            else {
+                entitySet.add(entity);
             }
         }
     }

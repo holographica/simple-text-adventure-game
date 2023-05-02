@@ -37,12 +37,12 @@ public class ParseCommandTests {
 
         String response = sendCommandToServer("chris: inv");
         assertTrue(response.contains("Your inventory contains:"));
-        assertTrue(response.contains("log"));
+        assertFalse(response.contains("log"));
         assertFalse(response.contains("gold"));
         assertFalse(response.contains("shovel"));
 
         Player currPlayer = server.getGameState().getCurrentPlayer();
-        assertTrue(currPlayer.getInventory().containsKey("log"));
+        assertFalse(currPlayer.getInventory().containsKey("log"));
         assertFalse(currPlayer.getInventory().containsKey("gold"));
         assertFalse(currPlayer.getInventory().containsKey("shovel"));
 
@@ -65,6 +65,18 @@ public class ParseCommandTests {
         assertTrue(response.contains("trapdoor - a locked wooden trapdoor in the floor"));
         assertFalse(response.contains("gold"));
         assertFalse(response.contains("shovel"));
+        assertFalse(response.contains("riverbank"));
+
+        sendCommandToServer("chris: get coin");
+        response = sendCommandToServer("chris: look");
+        assertFalse(response.contains("coin - a silver coin"));
+        assertTrue(response.contains("axe - a razor sharp axe"));
+
+        response = sendCommandToServer("simon: look");
+        assertFalse(response.contains("coin - a silver coin"));
+        assertTrue(response.contains("axe - a razor sharp axe"));
+        assertTrue(response.contains("trapdoor - a locked wooden trapdoor in the floor"));
+        assertFalse(response.contains("elf"));
         assertFalse(response.contains("riverbank"));
     }
 
@@ -108,6 +120,14 @@ public class ParseCommandTests {
         assertTrue(response.contains("too many basic commands detected"));
         assertFalse(response.contains("inv"));
         assertFalse(response.contains("look"));
+    }
+
+
+    @Test
+    public void testActionsSimple(){
+        sendCommandToServer("chris: get axe");
+        sendCommandToServer("chris: goto forest");
+        String response = sendCommandToServer("chris: chop tree");
     }
 
 

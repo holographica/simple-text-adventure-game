@@ -5,19 +5,18 @@ import java.util.HashSet;
 
 public class GameState {
     private HashMap<String, Location> locations;
-    private HashSet<GameAction> actions;
     private static Location startLocation;
     private HashMap<String, Player> playerList;
     private Player currentPlayer;
-    private HashMap<String, GameEntity> entityList;
-    private HashMap<String, GameAction> actionList;
+    private static HashMap<String, GameEntity> entityList;
+    private static HashMap<String, HashSet<GameAction>> actionList;
 
     public GameState(){
         this.locations  = new HashMap<>();
-        this.actions = new HashSet<>();
         this.playerList = new HashMap<>();
-        this.entityList = new HashMap<>();
-        this.actionList = new HashMap<>();
+        currentPlayer = getCurrentPlayer();
+        entityList = new HashMap<>();
+        actionList = new HashMap<>();
     }
 
     public HashMap<String, Location> getLocations(){
@@ -30,8 +29,12 @@ public class GameState {
                 .findFirst().orElse(null);
     }
 
-    public HashSet<GameAction> getActions(){
-        return this.actions;
+    public HashMap<String, HashSet<GameAction>> getActions(){
+        return actionList;
+    }
+
+    public HashSet<GameAction> getActionsByTrigger(String trigger){
+        return actionList.getOrDefault(trigger, null);
     }
 
     public HashMap<String, Player> getPlayerList(){
@@ -49,14 +52,18 @@ public class GameState {
     public static Location getStartLocation(){
         return startLocation;
     }
-    public <T extends GameEntity> HashMap<String, T> getEntitiesByType(Class<T> type) {
-        HashMap<String, T> entityList = new HashMap<>();
-        this.entityList.values().forEach(entity -> {
+    public static <T extends GameEntity> HashMap<String, T> getEntitiesByType(Class<T> type) {
+        HashMap<String, T> entitiesByType = new HashMap<>();
+        entityList.values().forEach(entity -> {
             if (type.isInstance(entity)) {
-                entityList.put(entity.getName(), type.cast(entity));
+                entitiesByType.put(entity.getName(), type.cast(entity));
             }
         });
-        return entityList;
+//        HashMap<String, Player> playersHere = getOtherPlayersAtLocation();
+//        playersHere.values().forEach (
+//                player -> entitiesByType.put(player.getName(), type.cast(player))
+//        );
+        return entitiesByType;
     }
 
     public HashMap<String, Artefact> getAllArtefacts() {
@@ -75,10 +82,6 @@ public class GameState {
         this.locations.put(newLocation.getName(),newLocation);
     }
 
-    public void addAction(GameAction newAction){
-        this.actions.add(newAction);
-    }
-
     public void addPlayer(Player newPlayer){
         this.playerList.put(newPlayer.getName(), newPlayer);
     }
@@ -86,17 +89,35 @@ public class GameState {
         this.currentPlayer = currPlayer;
     }
 
+
+    // TODO
+    //  when do i use this? during look command?
+    //  need to finish and use it somewhere as no usage currently
+    public HashMap<String, Player> getOtherPlayersAtLocation(){
+        HashMap<String, Player> otherPlayers = new HashMap<>();
+        playerList.values().forEach(
+                player -> otherPlayers.put(player.getName(), player)
+        );
+        otherPlayers.remove(this.currentPlayer.getName());
+        return otherPlayers;
+    }
+
     public void setStartLocation(Location location){
         startLocation = location;
     }
 
-    public void setEntityList(HashMap<String, GameEntity> entityList){
-        this.entityList = entityList;
+    public void setEntityList(HashMap<String, GameEntity> newList){
+        entityList = newList;
         getAllArtefacts();
+        getAllFurniture();
+        getAllCharacters();
+
     }
 
-    public void setActionList(HashMap<String, GameAction> actionList){
-        this.actionList = actionList;
+    // TODO
+    //  do i actually need this anywhere? probs not? delete if not
+    public void setActionList(HashMap<String, HashSet<GameAction>> newList){
+        actionList = newList;
     }
 
 
