@@ -6,7 +6,6 @@ import java.util.*;
 public class CommandHandler {
     private String command;
     private ArrayList<String> tokens;
-    private int commandStartIndex;
     private Player currentPlayer;
     public static final String[] basicCommandList = {"inventory", "inv","get","drop","goto","look"};
     private GameState gameState;
@@ -14,17 +13,18 @@ public class CommandHandler {
     // list of basic commands that were found in user input
     private HashSet<String> targetCommands;
 
-    // list of artefacts that were found in user input
-    private ArrayList<Artefact> targetArtefacts;
+    // list of entities that were found in user input
+    private HashSet<Artefact> targetArtefacts;
 
     // list of game characters that were found in user input
-    private ArrayList<GameCharacter> targetCharacters;
+    private HashSet<GameCharacter> targetCharacters;
 
     // list of furniture that was found in user input
-    private ArrayList<Furniture> targetFurniture;
+    private HashSet<Furniture> targetFurniture;
 
-    private ArrayList<Location> targetLocations;
+//    private HashMap<String, Location> targetLocations;
 
+    private HashSet<Location> targetLocations;
     // TODO
     // do i need list of all target entities?
 
@@ -32,7 +32,7 @@ public class CommandHandler {
     private HashMap<String, GameEntity> accessibleEntities;
 
     // list of locations that are accessible to the current player
-    private ArrayList<Location> accessibleLocations;
+    private HashMap<String, Location> accessibleLocations;
 
     // list of actions that were found in user input
     private HashMap<String, GameAction> targetActions;
@@ -41,19 +41,11 @@ public class CommandHandler {
 
     // command handler constructor
     public CommandHandler(String command, GameState gameState) {
-        // ensure commands are always handled in lowercase
+        this.gameState = gameState;
 
-        // do i want to make a separate method here?
-        // it could strip the player name and set as current player,
-        // then parse the tokens
-
-        // do i need to first split by colon
-        // remove player name
-        // then split cmd into tokens??
-        // check if there's only 1 word before colon?
-        // if not: invalid??
-        this.tokens = new ArrayList<>(Arrays.stream(command
-            .toLowerCase()
+        String[] splitCmd = command.toLowerCase().split(":",2);
+        this.currentPlayer = this.gameState.getPlayerByName(splitCmd[0]);
+        this.tokens = new ArrayList<>(Arrays.stream(splitCmd[1]
             .split(" "))
             .toList());
         StringBuilder commandBuilder = new StringBuilder();
@@ -61,76 +53,63 @@ public class CommandHandler {
             commandBuilder.append(token).append(" ");
         }
         this.command = commandBuilder.toString();
-//        System.out.println("COMMAND: "+this.command);
-        this.gameState = gameState;
+
         this.targetCommands = new HashSet<>();
-        this.targetArtefacts = new ArrayList<>();
-        this.targetCharacters = new ArrayList<>();
-        this.targetFurniture = new ArrayList<>();
-
-        // TODO
-        //  CHANGED THIS IF IT STOPS WORKING
-//        this.targetLocations = new HashMap<>();
-        this.targetLocations = new ArrayList<>();
-
+        this.targetArtefacts = new HashSet<>();
+        this.targetCharacters = new HashSet<>();
+        this.targetFurniture = new HashSet<>();
+        this.targetLocations = new HashSet<>();
         this.accessibleEntities = new HashMap<>();
         this.targetActions = new HashMap<>();
-        this.commandStartIndex = this.tokens.indexOf(":");
         this.responseString="";
-        this.currentPlayer = this.gameState.getCurrentPlayer();
-
-        // TODO:
-//        setAccessibleEntities();
+        setAccessibleEntities();
         setAccessibleLocations();
     }
 
     public HashMap<String, GameEntity> getAccessibleEntities(){
         return this.accessibleEntities;
     }
-    public ArrayList<Location> getAccessibleLocations(){
+    public HashMap<String, Location> getAccessibleLocations(){
         return this.accessibleLocations;
     }
 
-//    public void setAccessibleEntities(){
-//                // add player's current inventory to list of accessible subjects
-//        this.currentPlayer.getInventory().values().forEach(
-//                this::addAccessibleEntity
-//        );
-//        // add entities at player's current location to list of accessible subjects
-//        Location currLocation = this.currentPlayer.getCurrentLocation();
-//        addAccessibleEntities(currLocation.getAccessibleEntities());
-//
-//        // DO I DO THIS? DO I ADD THEM AS SUBJECTS OR LOCATIONS
-//        // add current location,
-//        // and paths from location,
-//        // to accessible locations?
-//    }
+    public void setAccessibleEntities(){
+        this.accessibleEntities = new HashMap<>();
+        String locationName = this.currentPlayer.getCurrentLocation();
+
+        // add entities at player's current location to list of accessible subjects
+        Location currLocation = this.gameState.getLocationByName(locationName);
+        this.addAccessibleEntities(currLocation.getAccessibleEntities());
+
+        // add player's current inventory to list of accessible subjects
+        for (Artefact e: this.currentPlayer.getInventory().values()){
+            this.addAccessibleEntity(e);
+        }
+    }
 
     public void addAccessibleEntity(GameEntity newEntity){
         this.accessibleEntities.put(newEntity.getName(),newEntity);
     }
+
     public void addAccessibleEntities(HashMap<String, GameEntity> entityList){
         entityList.values().forEach(
                 this::addAccessibleEntity
         );
     }
     public void addAccessibleLocation(Location newLocation){
-//        Location newLocation = this.gameState.getLocationByName(locationName);
-        this.accessibleLocations.add(newLocation);
+        this.accessibleLocations.put(newLocation.getName(),newLocation);
     }
 
     public void setAccessibleLocations(){
-        this.accessibleLocations = new ArrayList<>();
+        this.accessibleLocations = new HashMap<>();
         String locationName = this.currentPlayer.getCurrentLocation();
         Location currLocation = this.gameState.getLocationByName(locationName);
         this.addAccessibleLocation(currLocation);
-        currLocation.getPaths().values().forEach(
-                this::addAccessibleLocation
-        );
-//        System.out.println("accessible locations:");
-//        this.accessibleLocations.forEach(
-//                loc -> System.out.println(loc.getName())
-//        );
+        currLocation.getPaths().keySet().forEach(
+                pathTo -> {
+                    Location pathLocation = this.gameState.getLocationByName(pathTo);
+                    this.addAccessibleLocation(pathLocation);
+                });
     }
 
 
@@ -139,9 +118,6 @@ public class CommandHandler {
     }
     public ArrayList<String> getTokens() {
         return this.tokens;
-    }
-    public int getCommandStartIndex() {
-        return this.commandStartIndex;
     }
     public Player getCurrentPlayer() {
         return this.currentPlayer;
@@ -295,7 +271,7 @@ public class CommandHandler {
         }
 
         if (singleTargetArtefact()){
-
+            handleSingleEntityCommand();
         }
 
 
@@ -360,13 +336,11 @@ public class CommandHandler {
             addToResponseString("Error: invalid command detected");
             return;
         }
-
-        Location targetLocation = this.targetLocations.get(0);
-        if (!this.accessibleLocations.contains(targetLocation)){
+        Location targetLocation = getLocationHelper(this.targetLocations);
+        if (!this.accessibleLocations.containsValue(targetLocation)){
             addToResponseString("Error: this location is not currently accessible");
             return;
         }
-
         this.gameState.getCurrentPlayer().setCurrentLocation(targetLocation.getName());
         addToResponseString(this.gameState.getCurrentPlayer().getName() + " ");
         addToResponseString("moved to a new location: " + targetLocation.getName());
@@ -377,26 +351,38 @@ public class CommandHandler {
             addToResponseString("Error: invalid command detected");
             return;
         }
-        Artefact targetArtefact = this.targetArtefacts.get(0);
-        if (!this.accessibleEntities.containsValue(targetArtefact)){
-            addToResponseString("Error: this artefact is not currently accessible");
+        Artefact targetArtefact = getArtefactHelper(this.targetArtefacts);
+        if (!this.accessibleEntities.containsKey(targetArtefact.getName())){
+            addToResponseString("Error: you can't access this artefact");
             return;
         }
         Location currLocation = this.gameState.getLocationByName(this.gameState.getCurrentPlayer().getCurrentLocation());
         this.gameState.getCurrentPlayer().addToInventory(targetArtefact);
         currLocation.removeArtefact(targetArtefact.getName());
-
         System.out.println(this.getCurrentPlayer().getInventory().values());
+    }
+
+    public void handleDrop(){
+        if (!targetCommands.contains("drop")){
+            addToResponseString("Error: invalid command detected");
+            return;
+        }
+        Artefact targetArtefact = getArtefactHelper(this.targetArtefacts);
+        if (!this.getCurrentPlayer().getInventory().containsKey(targetArtefact.getName())){
+            addToResponseString("Error: you don't have this artefact");
+            return;
+        }
+        Location currLocation = this.gameState.getLocationByName(this.gameState.getCurrentPlayer().getCurrentLocation());
+        this.gameState.getCurrentPlayer().removeFromInventory(targetArtefact);
+        currLocation.addArtefact(targetArtefact);
     }
 
 
     public void handleLook(){
         Location currLocation = gameState.getLocationByName(gameState.getCurrentPlayer().getCurrentLocation());
-
         addToResponseString("You are currently in: ");
         addToResponseString(currLocation.getName() + " - ");
         addToResponseString(currLocation.getDescription()+"\n");
-
         addToResponseString("You can see: ");
         currLocation.getAccessibleEntities().values().forEach(
                 tempEntity -> {
@@ -404,29 +390,6 @@ public class CommandHandler {
                     addToResponseString(tempEntity.getDescription() + ", ");
                 }
         );
-//
-//
-//        currLocation.getArtefacts().values().forEach(
-//                tempEntity -> {
-//                    addToResponseString(tempEntity.getName() + " - ");
-//                    addToResponseString(tempEntity.getDescription() + ", ");
-//                }
-//        );
-//
-//        currLocation.getCharacters().values().forEach(
-//                tempEntity -> {
-//                    addToResponseString(tempEntity.getName() + " - ");
-//                    addToResponseString(tempEntity.getDescription() + ", ");
-//                }
-//        );
-//
-//        currLocation.getFurniture().values().forEach(
-//                tempEntity -> {
-//                    addToResponseString(tempEntity.getName() + " - ");
-//                    addToResponseString(tempEntity.getDescription() + ", ");
-//                }
-//        );
-
         addToResponseString("\nYou can see paths to: ");
         currLocation.getPaths().values().forEach(
                 path -> {
@@ -455,7 +418,10 @@ public class CommandHandler {
         gameState.getAllArtefacts().values().forEach(
                 artefact -> {
                     if (artefact.getName().equals(token)){
-                        this.targetArtefacts.put(artefact.getName(),artefact);
+                        if (this.targetArtefacts.contains(artefact)){
+                            addToResponseString("Error: duplicate subjects found in command");
+                        }
+                        else this.targetArtefacts.add(artefact);
                     }
                 }
         );
@@ -465,7 +431,10 @@ public class CommandHandler {
         gameState.getAllCharacters().values().forEach(
                 gameChar -> {
                     if (gameChar.getName().equals(token)){
-                        this.targetArtefacts.put(gameChar.getName(),gameChar);
+                        if (this.targetCharacters.contains(gameChar)){
+                            addToResponseString("Error: duplicate subjects found in command");
+                        }
+                        this.targetCharacters.add(gameChar);
                     }
                 }
         );
@@ -475,16 +444,19 @@ public class CommandHandler {
         gameState.getAllFurniture().values().forEach(
                 furniture -> {
                     if (furniture.getName().equals(token)){
-                        this.targetArtefacts.put(furniture.getName(),furniture);
-                    }
+                        if (this.targetFurniture.contains(furniture)){
+                            addToResponseString("Error: duplicate subjects found in command");
+                        }
+                        this.targetFurniture.add(furniture);
                 }
+            }
         );
     }
 
     public void checkIfLocation(String token){
-        gameState.getLocations().forEach(
+        gameState.getLocations().values().forEach(
                 location -> {
-                    if (location.getName().equals(token)){
+                    if (location.getName().equalsIgnoreCase(token)){
                         this.targetLocations.add(location);
                     }
                 }
@@ -495,6 +467,16 @@ public class CommandHandler {
         if (Arrays.asList(basicCommandList).contains(token)){
             targetCommands.add(token);
         }
+    }
+
+    public Location getLocationHelper(HashSet<Location> targetSet) {
+        ArrayList<Location> list = new ArrayList<>(targetSet);
+        return list.get(0);
+    }
+
+    public Artefact getArtefactHelper(HashSet<Artefact> targetSet){
+        ArrayList<Artefact> list = new ArrayList<>(targetSet);
+        return list.get(0);
     }
 
 //    public String handleBasicCommand(){}

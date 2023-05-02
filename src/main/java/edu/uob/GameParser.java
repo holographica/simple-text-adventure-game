@@ -60,7 +60,7 @@ public class GameParser {
     }
 
     public void printLocationDetails(){
-        this.gameState.getLocations().forEach(
+        this.gameState.getLocations().values().forEach(
                 location -> {
                     System.out.println("name: " + location.getName());
                     System.out.println("desc: " + location.getDescription());
@@ -96,7 +96,7 @@ public class GameParser {
     public void addPathsToLocations(Graph pathGraph){
         // map each location by its name
         HashMap<String, Location> locationMap = new HashMap<>();
-        this.gameState.getLocations().forEach(
+        this.gameState.getLocations().values().forEach(
                 location -> locationMap.put(location.getName(), location));
         // get path source/target locations, then add paths
         pathGraph.getEdges().forEach(

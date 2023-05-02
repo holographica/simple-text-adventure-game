@@ -76,6 +76,8 @@ public class ParseCommandTests {
 
         response = sendCommandToServer("chris: goto forest");
         currPlayer = server.getGameState().getCurrentPlayer();
+        System.out.println(response);
+        System.out.println(currPlayer.getCurrentLocation());
         assertTrue(response.contains("chris moved to a new location: forest"));
         assertFalse(response.contains("You are currently in:"));
         assertFalse(response.contains("too many basic commands detected"));

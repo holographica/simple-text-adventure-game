@@ -98,4 +98,8 @@ public class Location extends GameEntity {
     public void removeArtefact(String artefactName){
         this.artefacts.remove(artefactName);
     }
+
+    public void removeCharacter(String charName){
+        this.characters.remove(charName);
+    }
 }

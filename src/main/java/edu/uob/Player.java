@@ -31,9 +31,11 @@ public class Player extends GameCharacter{
     public void addToInventory(Artefact newArtefact){
         this.inventory.put(newArtefact.getName(), newArtefact);
     }
-    // TODO
-    //  CHANGED THIS: USED TO TAKE LOCATION AS ARG
-    //  IF RUN INTO PROBLEMS: CHANGE BACK!!
+
+    public void removeFromInventory(Artefact artefact){
+        this.inventory.remove(artefact.getName());
+    }
+
     public void setCurrentLocation(String newLocation){
         this.currentLocation = newLocation;
     }

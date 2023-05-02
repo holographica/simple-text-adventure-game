@@ -7,7 +7,7 @@ public class GameState {
 
     // (is it fine to use hashsets? better/worse than arraylist?)
     // maybe use hashmap instead??
-    private HashSet<Location> locations;
+    private HashMap<String, Location> locations;
     private HashSet<GameAction> actions;
     private static Location startLocation;
     private HashMap<String, Player> playerList;
@@ -19,20 +19,20 @@ public class GameState {
     // or can i just get them when needed, using methods?
 
     public GameState(){
-        this.locations  = new HashSet<>();
+        this.locations  = new HashMap<>();
         this.actions = new HashSet<>();
         this.playerList = new HashMap<>();
         this.entityList = new HashMap<>();
         this.actionList = new HashMap<>();
     }
 
-    public HashSet<Location> getLocations(){
+    public HashMap<String, Location> getLocations(){
         return this.locations;
     }
 
     // do i need this? helps with paths?
     public Location getLocationByName(String name){
-        return locations.stream()
+        return locations.values().stream()
                 .filter(loco -> loco.getName().equalsIgnoreCase(name))
                 .findFirst().orElse(null);
     }
@@ -45,6 +45,7 @@ public class GameState {
         return this.playerList;
     }
     public Player getPlayerByName(String playerName){
+        playerName = playerName.toLowerCase();
         return this.playerList.get(playerName);
     }
     public Player getCurrentPlayer() { return this.currentPlayer; }
@@ -98,7 +99,7 @@ public class GameState {
     }
 
     public void addLocation(Location newLocation){
-        this.locations.add(newLocation);
+        this.locations.put(newLocation.getName(),newLocation);
     }
 
     public void addAction(GameAction newAction){
