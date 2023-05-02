@@ -123,42 +123,59 @@ public class GameParser {
 
     public void parseLocationAttributes(Location location, ArrayList<Graph> locationAttributes) {
         locationAttributes.forEach(
-            attribute -> {
-                parseArtefacts(location, attribute);
-                parseFurniture(location, attribute);
-                parseCharacters(location, attribute);
-            }
+                attribute -> {
+                    parseAllAttributes("artefacts",location,attribute);
+                    parseAllAttributes("furniture",location,attribute);
+                    parseAllAttributes("characters",location,attribute);
+                }
         );
     }
 
-    public void parseArtefacts(Location location, Graph subgraph){
-        if (subgraph.getId().getId().equalsIgnoreCase("artefacts")){
-            location.addAllArtefacts(subgraph);
+    public void parseAllAttributes(String entityType, Location location, Graph subgraph){
+        if (subgraph.getId().getId().equalsIgnoreCase(entityType)) {
+            switch (entityType.toLowerCase()) {
+                case "artefacts" -> location.addAllArtefacts(subgraph);
+                case "furniture" -> location.addAllFurniture(subgraph);
+                case "characters" -> location.addAllCharacters(subgraph);
+            }
         }
     }
 
-    public void parseFurniture(Location location, Graph subgraph) {
-        if (subgraph.getId().getId().equalsIgnoreCase("furniture")){
-            location.addAllFurniture(subgraph);
-        }
-    }
+//    public void parseLocationAttributes(Location location, ArrayList<Graph> locationAttributes) {
+//        locationAttributes.forEach(
+//            attribute -> {
+//                parseArtefacts(location, attribute);
+//                parseFurniture(location, attribute);
+//                parseCharacters(location, attribute);
+//            }
+//        );
+//    }
 
-    public void parseCharacters(Location location, Graph subgraph){
-        if (subgraph.getId().getId().equalsIgnoreCase("characters")){
-            location.addAllCharacters(subgraph);
-        }
-    }
+//    public void parseArtefacts(Location location, Graph subgraph){
+//        if (subgraph.getId().getId().equalsIgnoreCase("artefacts")){
+//            location.addAllArtefacts(subgraph);
+//        }
+//    }
+//
+//    public void parseFurniture(Location location, Graph subgraph) {
+//        if (subgraph.getId().getId().equalsIgnoreCase("furniture")){
+//            location.addAllFurniture(subgraph);
+//        }
+//    }
+//
+//    public void parseCharacters(Location location, Graph subgraph){
+//        if (subgraph.getId().getId().equalsIgnoreCase("characters")){
+//            location.addAllCharacters(subgraph);
+//        }
+//    }
 
     public HashMap<String, GameEntity> getEntityList(){
         return this. entityList;
     }
 
-
-
     public void addEntityToList(GameEntity entity){
         this.entityList.put(entity.getName(), entity);
     }
-
 
 
     public void parseActions(){

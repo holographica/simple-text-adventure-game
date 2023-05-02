@@ -1,6 +1,5 @@
 package edu.uob;
 
-import java.lang.reflect.Array;
 import java.util.*;
 
 public class CommandHandler {
@@ -321,24 +320,24 @@ public class CommandHandler {
 
     public void handleSingleEntityCommand(){
         if (targetCommands.contains("get")){
-            handleGet();
+            handleGetDrop(true);
         }
         else if (targetCommands.contains("drop")){
-            handleDrop();
+            handleGetDrop(false);
         }
         else {
-            addToResponseString("Error: invalid command detected");
+            setResponseString("Error: invalid command detected");
         }
     }
 
     public void handleGoto(){
         if (!targetCommands.contains("goto")){
-            addToResponseString("Error: invalid command detected");
+            setResponseString("Error: invalid command detected");
             return;
         }
         Location targetLocation = getLocationHelper(this.targetLocations);
         if (!this.accessibleLocations.containsValue(targetLocation)){
-            addToResponseString("Error: this location is not currently accessible");
+            setResponseString("Error: this location is not currently accessible");
             return;
         }
         this.gameState.getCurrentPlayer().setCurrentLocation(targetLocation.getName());
@@ -346,44 +345,37 @@ public class CommandHandler {
         addToResponseString("moved to a new location: " + targetLocation.getName());
     }
 
-    public void handleGet(){
-        if (!targetCommands.contains("get")){
-            addToResponseString("Error: invalid command detected");
+    public void handleGetDrop(boolean get){
+        String cmd = get ? "get":"drop";
+        if (!targetCommands.contains(cmd)){
+            setResponseString("Error: invalid command detected");
             return;
         }
         Artefact targetArtefact = getArtefactHelper(this.targetArtefacts);
-        if (!this.accessibleEntities.containsKey(targetArtefact.getName())){
-            addToResponseString("Error: you can't access this artefact");
-            return;
-        }
         Location currLocation = this.gameState.getLocationByName(this.gameState.getCurrentPlayer().getCurrentLocation());
-        this.gameState.getCurrentPlayer().addToInventory(targetArtefact);
-        currLocation.removeArtefact(targetArtefact.getName());
-        System.out.println(this.getCurrentPlayer().getInventory().values());
-    }
-
-    public void handleDrop(){
-        if (!targetCommands.contains("drop")){
-            addToResponseString("Error: invalid command detected");
-            return;
+        if (get){
+            if (!this.accessibleEntities.containsKey(targetArtefact.getName())) {
+                setResponseString("Error: you can't access this artefact");
+                return;
+            }
+            this.gameState.getCurrentPlayer().addToInventory(targetArtefact);
+            currLocation.removeArtefact(targetArtefact.getName());
+        } else {
+            if (!this.getCurrentPlayer().getInventory().containsKey(targetArtefact.getName())) {
+                setResponseString("Error: you can't access this artefact");
+                return;
+            }
+            this.gameState.getCurrentPlayer().removeFromInventory(targetArtefact);
+            currLocation.addArtefact(targetArtefact);
         }
-        Artefact targetArtefact = getArtefactHelper(this.targetArtefacts);
-        if (!this.getCurrentPlayer().getInventory().containsKey(targetArtefact.getName())){
-            addToResponseString("Error: you don't have this artefact");
-            return;
-        }
-        Location currLocation = this.gameState.getLocationByName(this.gameState.getCurrentPlayer().getCurrentLocation());
-        this.gameState.getCurrentPlayer().removeFromInventory(targetArtefact);
-        currLocation.addArtefact(targetArtefact);
     }
-
 
     public void handleLook(){
         Location currLocation = gameState.getLocationByName(gameState.getCurrentPlayer().getCurrentLocation());
         addToResponseString("You are currently in: ");
         addToResponseString(currLocation.getName() + " - ");
-        addToResponseString(currLocation.getDescription()+"\n");
-        addToResponseString("You can see: ");
+        addToResponseString(currLocation.getDescription());
+        addToResponseString("\nYou can see: ");
         currLocation.getAccessibleEntities().values().forEach(
                 tempEntity -> {
                     addToResponseString(tempEntity.getName() + " - ");
@@ -398,69 +390,31 @@ public class CommandHandler {
         );
     }
 
-
     public void addToResponseString(String toAppend){
         setResponseString(this.getResponseString() + toAppend);
     }
+
 
     public void setResponseString(String newString){
         this.responseString = newString;
     }
 
     public void checkIfEntity(String token){
-        checkIfArtefact(token);
-        checkIfCharacter(token);
-        checkIfFurniture(token);
-        checkIfLocation(token);
+        checkEntity(token, this.targetArtefacts, name -> this.gameState.getAllArtefacts().get(name));
+        checkEntity(token, this.targetCharacters, name -> this.gameState.getAllCharacters().get(name));
+        checkEntity(token, this.targetFurniture, name -> this.gameState.getAllFurniture().get(name));
+        checkEntity(token, this.targetLocations, name -> this.gameState.getLocations().get(name));
     }
 
-    public void checkIfArtefact(String token){
-        gameState.getAllArtefacts().values().forEach(
-                artefact -> {
-                    if (artefact.getName().equals(token)){
-                        if (this.targetArtefacts.contains(artefact)){
-                            addToResponseString("Error: duplicate subjects found in command");
-                        }
-                        else this.targetArtefacts.add(artefact);
-                    }
-                }
-        );
-    }
-
-    public void checkIfCharacter(String token){
-        gameState.getAllCharacters().values().forEach(
-                gameChar -> {
-                    if (gameChar.getName().equals(token)){
-                        if (this.targetCharacters.contains(gameChar)){
-                            addToResponseString("Error: duplicate subjects found in command");
-                        }
-                        this.targetCharacters.add(gameChar);
-                    }
-                }
-        );
-    }
-
-    public void checkIfFurniture(String token){
-        gameState.getAllFurniture().values().forEach(
-                furniture -> {
-                    if (furniture.getName().equals(token)){
-                        if (this.targetFurniture.contains(furniture)){
-                            addToResponseString("Error: duplicate subjects found in command");
-                        }
-                        this.targetFurniture.add(furniture);
-                }
+    public <T extends GameEntity> void checkEntity(String token, HashSet<T> targetSet, EntityChecker<T> entityChecker) {
+        T entity = entityChecker.getEntityByName(token);
+        if (entity != null) {
+            if (targetSet.contains(entity)) {
+                addToResponseString("Error: duplicate subjects found in command");
+            } else {
+                targetSet.add(entity);
             }
-        );
-    }
-
-    public void checkIfLocation(String token){
-        gameState.getLocations().values().forEach(
-                location -> {
-                    if (location.getName().equalsIgnoreCase(token)){
-                        this.targetLocations.add(location);
-                    }
-                }
-        );
+        }
     }
 
     public void checkForBasicCommand(String token){

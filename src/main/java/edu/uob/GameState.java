@@ -4,9 +4,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 public class GameState {
-
-    // (is it fine to use hashsets? better/worse than arraylist?)
-    // maybe use hashmap instead??
     private HashMap<String, Location> locations;
     private HashSet<GameAction> actions;
     private static Location startLocation;
@@ -14,9 +11,6 @@ public class GameState {
     private Player currentPlayer;
     private HashMap<String, GameEntity> entityList;
     private HashMap<String, GameAction> actionList;
-
-    // DO I NEED INDIVIDUAL LISTS OF ARTEFACTS/CHARS/FURNITURE/LOCATIONS?
-    // or can i just get them when needed, using methods?
 
     public GameState(){
         this.locations  = new HashMap<>();
@@ -30,7 +24,6 @@ public class GameState {
         return this.locations;
     }
 
-    // do i need this? helps with paths?
     public Location getLocationByName(String name){
         return locations.values().stream()
                 .filter(loco -> loco.getName().equalsIgnoreCase(name))
@@ -44,58 +37,38 @@ public class GameState {
     public HashMap<String, Player> getPlayerList(){
         return this.playerList;
     }
+
     public Player getPlayerByName(String playerName){
         playerName = playerName.toLowerCase();
         return this.playerList.get(playerName);
     }
-    public Player getCurrentPlayer() { return this.currentPlayer; }
+    public Player getCurrentPlayer(){
+        return this.currentPlayer;
+    }
 
     public static Location getStartLocation(){
         return startLocation;
     }
-
-
-
-    // TODO
-    // TODO
-    // NB: changed 3 funcs below to return <String, Artefact> not <String, GameEntity>
-    // so have to do explicit cast
-    // is this bad? change back if necessary
-
-    public HashMap<String, Artefact> getAllArtefacts(){
-        HashMap<String,Artefact> artefactList = new HashMap<>();
-        this.entityList.values().forEach(
-                entity -> {
-                    if (entity instanceof Artefact){
-                        artefactList.put(entity.getName(), (Artefact) entity);
-                    }
-                }
-        );
-        return artefactList;
+    public <T extends GameEntity> HashMap<String, T> getEntitiesByType(Class<T> type) {
+        HashMap<String, T> entityList = new HashMap<>();
+        this.entityList.values().forEach(entity -> {
+            if (type.isInstance(entity)) {
+                entityList.put(entity.getName(), type.cast(entity));
+            }
+        });
+        return entityList;
     }
 
-    public HashMap<String, GameCharacter> getAllCharacters(){
-        HashMap<String,GameCharacter> charList = new HashMap<>();
-        this.entityList.values().forEach(
-                entity -> {
-                    if (entity instanceof GameCharacter){
-                        charList.put(entity.getName(), (GameCharacter) entity);
-                    }
-                }
-        );
-        return charList;
+    public HashMap<String, Artefact> getAllArtefacts() {
+        return getEntitiesByType(Artefact.class);
     }
 
-    public HashMap<String, Furniture> getAllFurniture(){
-        HashMap<String,Furniture> furnitureList = new HashMap<>();
-        this.entityList.values().forEach(
-                entity -> {
-                    if (entity instanceof Furniture){
-                        furnitureList.put(entity.getName(), (Furniture) entity);
-                    }
-                }
-        );
-        return furnitureList;
+    public HashMap<String, GameCharacter> getAllCharacters() {
+        return getEntitiesByType(GameCharacter.class);
+    }
+
+    public HashMap<String, Furniture> getAllFurniture() {
+        return getEntitiesByType(Furniture.class);
     }
 
     public void addLocation(Location newLocation){
@@ -109,10 +82,12 @@ public class GameState {
     public void addPlayer(Player newPlayer){
         this.playerList.put(newPlayer.getName(), newPlayer);
     }
-    public void setCurrentPlayer(Player currPlayer) { this.currentPlayer = currPlayer; }
+    public void setCurrentPlayer(Player currPlayer){
+        this.currentPlayer = currPlayer;
+    }
 
     public void setStartLocation(Location location){
-        this.startLocation = location;
+        startLocation = location;
     }
 
     public void setEntityList(HashMap<String, GameEntity> entityList){

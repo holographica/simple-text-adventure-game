@@ -1,12 +1,13 @@
 package edu.uob;
 
 import java.util.HashSet;
-import java.util.List;
 
 public class GameAction {
     private String narration;
     private HashSet<String> triggers;
     private HashSet<GameEntity> subjectEntities;
+
+    // for basic cmds these are target artefacts/locations/chars etc
     private HashSet<GameEntity> consumedEntities;
     private HashSet<GameEntity> producedEntities;
 
