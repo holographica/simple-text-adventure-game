@@ -186,9 +186,11 @@ public class CommandHandler {
         if (!targetActions.isEmpty()) {
 //            System.out.println("TARGET ACTIONS NOT EMPTY");
             HashSet<GameAction> uniqueActions = new HashSet<>();
+            HashSet<String> triggersToRemove = new HashSet<>();
             // go through each key in the hashmap
             this.targetActions.forEach(
                 (trigger, actionSet) -> {
+                    System.out.println("Started here");
 //                    System.out.println("trigger ie keyphrase: " + trigger + "  | actionset: "+ actionSet + "\n");
                     actionSet.forEach(
                         action -> {
@@ -204,8 +206,9 @@ public class CommandHandler {
                             // otherwise error
                             HashMap<String, GameEntity> requiredEntities = action.getRequiredEntities();
                             if (!accessibleEntities.keySet().containsAll(requiredEntities.keySet())){
-                                System.out.println("don't have access to required entities");
-                                actionSet.remove(action);
+//                                System.out.println("don't have access to required entities for " + trigger);
+                                setResponseString("Error: don't have access to required entities");
+//                                actionSet.remove(action);
                             }
                         }
                     );
@@ -214,14 +217,19 @@ public class CommandHandler {
 //                    for (GameAction action: actionSet){
 //                        System.out.println(action.getTriggers());
 //                    }
+                    System.out.println("GOT HERE ONE");
                     if (actionSet.isEmpty()) {
 //                        System.out.println("empty set - removed " + trigger);
-                        this.targetActions.remove(trigger);
+                        triggersToRemove.add(trigger);
                     }
+
                     else if (actionSet.size() > 1) {
+                        System.out.println("GOT HERE TWOOO");
                         setResponseString("Error: too many possible actions");
                     }
                     else {
+                        System.out.println("GOT HERE 3333");
+                        System.out.println("action set : " + actionSet);
                         uniqueActions.addAll(actionSet);
                     }
 //
@@ -236,6 +244,10 @@ public class CommandHandler {
                     // if set size ==0, remove from hashmap
                     // if ==1, do nothing
                 }
+            );
+
+            triggersToRemove.forEach(
+                    trigger -> targetActions.remove(trigger)
             );
             if (uniqueActions.size()==1){
                 System.out.println("target actions size 1!!");
@@ -489,7 +501,6 @@ public class CommandHandler {
 
     public void checkIfAction(String triggerPhrase){
         if (this.gameState.getActions().containsKey(triggerPhrase)){
-            System.out.println("found action key");
             System.out.println("PHRASEEEE: "+ triggerPhrase + "\n\n");
             if (targetActions.containsKey(triggerPhrase)){
                 setResponseString("Error: duplicate actions found in command");
