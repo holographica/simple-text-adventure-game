@@ -12,6 +12,8 @@ public class GameAction {
     // for basic cmds these are target artefacts/locations/chars etc
     private HashSet<GameEntity> consumedEntities;
     private HashSet<GameEntity> producedEntities;
+    private boolean consumesHealth;
+    private boolean producesHealth;
 
     public GameAction(){
         this.narration = "";
@@ -19,6 +21,8 @@ public class GameAction {
         this.subjectEntities = new HashSet<>();
         this.consumedEntities = new HashSet<>();
         this.producedEntities = new HashSet<>();
+        this.consumesHealth = false;
+        this.producesHealth = false;
     }
 
     @Override
@@ -69,16 +73,8 @@ public class GameAction {
 
     public void addSubjectEntity(String entityName){
         GameEntity foundEntity = GameState.getEntitiesByType(GameEntity.class).get(entityName);
-
-        // list consists of gameEntities
-        // so use instanceof to check specific type when needed
-
         if (foundEntity != (null)){
             this.subjectEntities.add(foundEntity);
-        }
-        else {
-            // TODO remove this once working?
-            System.out.println("Could not find subject entity to add to action");
         }
     }
 
@@ -91,13 +87,10 @@ public class GameAction {
         if (foundEntity != (null)){
             this.consumedEntities.add(foundEntity);
         }
-        else if (entityName.equalsIgnoreCase("health")) {
-
+        else if (entityName.equalsIgnoreCase("health")){
+            this.setConsumesHealth();
         }
-            // TODO remove this once working?
-            System.out.println("Could not find consumed entity to add to action");
-            System.out.println("name: "+entityName+ "\n");
-        }
+    }
 
     public HashSet<GameEntity> getProducedEntities() {
         return this.producedEntities;
@@ -109,12 +102,25 @@ public class GameAction {
         if (foundEntity != (null)){
             this.producedEntities.add(foundEntity);
         }
-        else {
-
-            // TODO remove this once working?
-            System.out.println("Could not find produced entity to add to action");
-            System.out.println("name: "+entityName+ "\n");
+        else if (entityName.equalsIgnoreCase("health")) {
+            this.setProducesHealth();
         }
+    }
+
+    public void setConsumesHealth(){
+        this.consumesHealth=true;
+    }
+
+    public boolean doesConsumeHealth(){
+        return this.consumesHealth;
+    }
+
+    public void setProducesHealth(){
+        this.producesHealth=true;
+    }
+
+    public boolean doesProduceHealth(){
+        return this.producesHealth;
     }
 
     public HashMap<String, GameEntity> getRequiredEntities(){

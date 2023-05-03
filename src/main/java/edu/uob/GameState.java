@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 public class GameState {
-    private HashMap<String, Location> locations;
+    private static HashMap<String, Location> locations;
     private static Location startLocation;
     private HashMap<String, Player> playerList;
     private Player currentPlayer;
@@ -12,7 +12,7 @@ public class GameState {
     private static HashMap<String, HashSet<GameAction>> actionList;
 
     public GameState(){
-        this.locations  = new HashMap<>();
+        locations  = new HashMap<>();
         this.playerList = new HashMap<>();
         currentPlayer = getCurrentPlayer();
         entityList = new HashMap<>();
@@ -20,10 +20,10 @@ public class GameState {
     }
 
     public HashMap<String, Location> getLocations(){
-        return this.locations;
+        return locations;
     }
 
-    public Location getLocationByName(String name){
+    public static Location getLocationByName(String name){
         return locations.values().stream()
                 .filter(loco -> loco.getName().equalsIgnoreCase(name))
                 .findFirst().orElse(null);
@@ -79,7 +79,7 @@ public class GameState {
     }
 
     public void addLocation(Location newLocation){
-        this.locations.put(newLocation.getName(),newLocation);
+        locations.put(newLocation.getName(),newLocation);
     }
 
     public void addPlayer(Player newPlayer){

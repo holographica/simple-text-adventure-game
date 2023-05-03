@@ -20,7 +20,7 @@ public final class GameServer {
     private static final char END_OF_TRANSMISSION = 4;
     public static void main(String[] args) throws IOException {
         File entitiesFile = Paths.get("config" + File.separator + "extended-entities.dot").toAbsolutePath().toFile();
-        File actionsFile = Paths.get("config" + File.separator + "extended-actions.xml").toAbsolutePath().toFile();
+        File actionsFile = Paths.get("config" + File.separator + "test-actions.xml").toAbsolutePath().toFile();
         GameServer server = new GameServer(entitiesFile, actionsFile);
         server.blockingListenOn(8888);
         BufferedReader commandLine = new BufferedReader(new InputStreamReader(System.in));
@@ -72,7 +72,7 @@ public final class GameServer {
 
     public void checkNewPlayer(String name){
         if (this.gameState.getPlayerByName(name)==null){
-            Player newPlayer = new Player(name, "Player called"+name);
+            Player newPlayer = new Player(name, "Player called "+name);
             this.gameState.addPlayer(newPlayer);
             this.gameState.setCurrentPlayer(newPlayer);
         }

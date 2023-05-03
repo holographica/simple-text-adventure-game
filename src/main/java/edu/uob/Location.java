@@ -5,7 +5,6 @@ import com.alexmerz.graphviz.objects.Node;
 import java.util.HashMap;
 
 public class Location extends GameEntity {
-
     private HashMap<String, Location> pathsFromLocation;
     private HashMap<String, Artefact> artefacts;
     private HashMap<String, GameCharacter> characters;

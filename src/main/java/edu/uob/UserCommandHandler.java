@@ -6,39 +6,18 @@ public class UserCommandHandler {
     private String command;
     private ArrayList<String> tokens;
     private Player currentPlayer;
-    public static final String[] basicCommandList = {"inventory", "inv","get","drop","goto","look"};
+    public static final String[] basicCommandList = {"inventory", "inv","get","drop","goto","look","health"};
     private GameState gameState;
-
-    // list of basic commands that were found in user input
     private HashSet<String> targetCommands;
-
-    // list of entities that were found in user input
     private HashSet<Artefact> targetArtefacts;
-
-    // list of game characters that were found in user input
     private HashSet<GameCharacter> targetCharacters;
-
-    // list of furniture that was found in user input
     private HashSet<Furniture> targetFurniture;
-
-//    private HashMap<String, Location> targetLocations;
-
     private HashSet<Location> targetLocations;
-    // TODO
-    // do i need list of all target entities?
-
-    // list of entities that are accessible to the current player
     private HashMap<String, GameEntity> accessibleEntities;
-
-    // list of locations that are accessible to the current player
     private HashMap<String, Location> accessibleLocations;
-
-    // list of actions that were found in user input
     private HashMap<String, HashSet<GameAction>> targetActions;
-
     private String responseString;
 
-    // command handler constructor
     public UserCommandHandler(String command, GameState gameState) {
         this.gameState = gameState;
 
@@ -72,7 +51,7 @@ public class UserCommandHandler {
     }
 
     public void checkRequiredEntities(HashMap<String,GameEntity> requiredEntities){
-        if (requiredEntities.containsKey("health") && this.getCurrentPlayer().getPlayerHealth()>0){
+        if (requiredEntities.containsKey("health") && this.getCurrentPlayer().getHealthAsInt()>0){
             requiredEntities.remove("health");
         }
         if (!accessibleEntities.keySet().containsAll(requiredEntities.keySet())){
@@ -84,16 +63,12 @@ public class UserCommandHandler {
         this.accessibleEntities = new HashMap<>();
         String locationName = this.currentPlayer.getCurrentLocation();
         // add entities at player's current location to list of accessible subjects
-        Location currLocation = this.gameState.getLocationByName(locationName);
+        Location currLocation = GameState.getLocationByName(locationName);
         this.addAccessibleEntities(currLocation.getAccessibleEntities());
         // add player's current inventory to list of accessible subjects
         for (Artefact e: this.currentPlayer.getInventory().values()){
             this.addAccessibleEntity(e);
         }
-        // get health of player?
-
-//        GameEntity health = this.currentPlayer.;
-//        this.accessibleEntities.
     }
 
     public void addAccessibleEntity(GameEntity newEntity){
@@ -112,15 +87,14 @@ public class UserCommandHandler {
     public void setAccessibleLocations(){
         this.accessibleLocations = new HashMap<>();
         String locationName = this.currentPlayer.getCurrentLocation();
-        Location currLocation = this.gameState.getLocationByName(locationName);
+        Location currLocation = GameState.getLocationByName(locationName);
         this.addAccessibleLocation(currLocation);
         currLocation.getPaths().keySet().forEach(
                 pathTo -> {
-                    Location pathLocation = this.gameState.getLocationByName(pathTo);
+                    Location pathLocation = GameState.getLocationByName(pathTo);
                     this.addAccessibleLocation(pathLocation);
                 });
     }
-
 
     public String getCommand() {
         return this.command;
@@ -267,32 +241,42 @@ public class UserCommandHandler {
         } else {
             uniqueActions.forEach(
                 action -> {
-
-                    // get what it consumes
-                    // remove this from the location or player
-                    // send to storeroom
                     action.getConsumedEntities().forEach(
-                        entity -> consumeEntity(entity)
+                            this::consumeEntity
                     );
+                    if (action.doesConsumeHealth()){
+                        consumeHealth();
+                    }
                     action.getProducedEntities().forEach(
-                            entity -> {produceEntity(entity);}
+                            this::produceEntity
                     );
+                    if (action.doesProduceHealth()){
+                        produceHealth();
+                    }
                     setResponseString(action.getNarration());
                 }
             );
         }
     }
 
+    public void consumeHealth(){
+        this.getCurrentPlayer().decreasePlayerHealth();
+    }
+
+    public void produceHealth(){
+        this.getCurrentPlayer().increasePlayerHealth();
+    }
+
     public void consumeEntity(GameEntity entity) {
-        Player currPlayer = this.getCurrentPlayer();
         if (entity.getName().equalsIgnoreCase("health")){
-            currPlayer.decreasePlayerHealth();
+            this.getCurrentPlayer().decreasePlayerHealth();
+            addToResponseString("decreased health");
             return;
         }
-        Location currLocation = gameState.getLocationByName(currPlayer.getCurrentLocation());
-        Location storeroom = gameState.getLocationByName("storeroom");
+        Location currLocation = GameState.getLocationByName(this.getCurrentPlayer().getCurrentLocation());
+        Location storeroom = GameState.getLocationByName("storeroom");
         if (entity instanceof Artefact) {
-            currPlayer.removeFromInventory((Artefact) entity);
+            this.getCurrentPlayer().removeFromInventory((Artefact) entity);
         }
         currLocation.removeEntity(entity.getName());
         storeroom.addEntity(entity);
@@ -301,9 +285,10 @@ public class UserCommandHandler {
     public void produceEntity(GameEntity entity) {
         if (entity.getName().equalsIgnoreCase("health")) {
             this.getCurrentPlayer().increasePlayerHealth();
+            addToResponseString("increased health");
             return;
         }
-        Location newLocation = gameState.getLocationByName(this.getCurrentPlayer().getCurrentLocation());
+        Location newLocation = GameState.getLocationByName(this.getCurrentPlayer().getCurrentLocation());
         if (!(entity instanceof Location)){
             Location priorLocation = gameState.getEntityLocation(entity.getName());
             priorLocation.removeEntity(entity.getName());
@@ -311,44 +296,19 @@ public class UserCommandHandler {
         newLocation.addEntity(entity);
     }
 
-
-
     public void basicCommandHandler(){
-        // should have already checked that size of basic cmd list ==1
-        // also should have already checked if action list is empty
-        // things MUST be in right order
-
-
-        // TODO: should now check whether subject list ==1 or 0
-
-        // TODO: NEED TO CHECK THAT ENTITIES COME AFTER COMMAND
-        //  IF NOT CORRECT ORDER - COMMAND IS INVALID
-
-        // so: for look, inv: all maps must be empty
-
-        // below:
-        // checks if 0 target entities
-        // then looks for basic command
-        // if found in target cmds list - execute cmd
-        // otherwise add error msg and return
         if (noTargetEntities()){
-            System.out.println("NO TARGETS");
             handleNoEntityCommand();
             return;
         }
-
         if (singleTargetLocation()){
-            System.out.println("ONE LOCO");
             handleGoto();
             return;
         }
-
         if (singleTargetArtefact()){
-            System.out.println("ONE ARTEFACT");
             handleSingleEntityCommand();
             return;
         }
-
         setResponseString("Error: invalid command detected");
 
 
@@ -400,6 +360,9 @@ public class UserCommandHandler {
         else if (targetCommands.contains("inv")){
             handleInv();
         }
+        else if (targetCommands.contains("health")){
+            handleHealth();
+        }
         else {
             setResponseString("Error: invalid command detected");
         }
@@ -418,15 +381,17 @@ public class UserCommandHandler {
     }
 
     public void handleLook(){
-        Location currLocation = gameState.getLocationByName(gameState.getCurrentPlayer().getCurrentLocation());
+        Location currLocation = GameState.getLocationByName(gameState.getCurrentPlayer().getCurrentLocation());
         addToResponseString("You are currently in: ");
         addToResponseString(currLocation.getName() + " - ");
         addToResponseString(currLocation.getDescription());
         addToResponseString("\nYou can see: ");
         currLocation.getAccessibleEntities().values().forEach(
                 tempEntity -> {
-                    addToResponseString(tempEntity.getName() + " - ");
-                    addToResponseString(tempEntity.getDescription() + ", ");
+                    if (!tempEntity.getName().equals(this.getCurrentPlayer().getName())){
+                        addToResponseString(tempEntity.getName() + " - ");
+                        addToResponseString(tempEntity.getDescription() + ", ");
+                    }
                 }
         );
         addToResponseString("\nYou can see paths to: ");
@@ -438,10 +403,15 @@ public class UserCommandHandler {
     }
 
     public void handleInv(){
-        this.responseString += "Your inventory contains: ";
+        addToResponseString("Your inventory contains: ");
         for (Artefact aft: this.getCurrentPlayer().getInventory().values() ){
             addToResponseString(aft.getName() + ", ");
         }
+    }
+
+    public void handleHealth(){
+        addToResponseString("Your current health is ");
+        addToResponseString(gameState.getCurrentPlayer().getPlayerHealth());
     }
 
     public void handleGoto(){
@@ -450,6 +420,10 @@ public class UserCommandHandler {
             return;
         }
         Location targetLocation = getLocationHelper(this.targetLocations);
+        if (tokens.indexOf("goto")< tokens.indexOf(targetLocation.getName())){
+            setResponseString("Error: invalid basic command structure");
+            return;
+        }
         if (!this.accessibleLocations.containsValue(targetLocation)){
             setResponseString("Error: this location is not currently accessible");
             return;
@@ -466,7 +440,11 @@ public class UserCommandHandler {
             return;
         }
         Artefact targetArtefact = getArtefactHelper(this.targetArtefacts);
-        Location currLocation = this.gameState.getLocationByName(this.gameState.getCurrentPlayer().getCurrentLocation());
+        Location currLocation = GameState.getLocationByName(this.gameState.getCurrentPlayer().getCurrentLocation());
+        if (tokens.indexOf(cmd) < tokens.indexOf(targetArtefact.getName())){
+            setResponseString("Error: invalid command structure");
+            return;
+        }
         if (get){
             if (!this.accessibleEntities.containsKey(targetArtefact.getName())) {
                 setResponseString("Error: you can't access this artefact");

@@ -49,10 +49,8 @@ public class GameParser {
             parser.parse(reader);
         } catch (IOException e ) {
             System.out.println("io exception");
-            throw new RuntimeException(e);
         } catch (ParseException e) {
             System.out.println("parse exception");
-            throw new RuntimeException(e);
         }
         Graph entitiesGraph = parser.getGraphs().get(0);
         Graph locationGraph = entitiesGraph.getSubgraphs().get(0);
@@ -160,8 +158,7 @@ public class GameParser {
     public void parseActions(){
         try {
             DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-            Document document = builder.parse("config" + File.separator + "extended-actions.xml");
-
+            Document document = builder.parse("config" + File.separator + "test-actions.xml");
             Element root = document.getDocumentElement();
             NodeList actions = root.getChildNodes();
             makeNodeList(actions)
