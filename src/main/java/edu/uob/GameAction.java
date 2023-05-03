@@ -8,6 +8,7 @@ public class GameAction {
     private String narration;
     private HashSet<String> triggers;
     private HashSet<GameEntity> subjectEntities;
+
     // for basic cmds these are target artefacts/locations/chars etc
     private HashSet<GameEntity> consumedEntities;
     private HashSet<GameEntity> producedEntities;
@@ -81,6 +82,10 @@ public class GameAction {
         }
     }
 
+    public HashSet<GameEntity> getConsumedEntities() {
+        return consumedEntities;
+    }
+
     public void addConsumedEntity(String entityName){
         GameEntity foundEntity = GameState.getEntitiesByType(GameEntity.class).get(entityName);
         if (foundEntity != (null)){
@@ -92,6 +97,11 @@ public class GameAction {
             System.out.println("name: "+entityName+ "\n");
         }
     }
+
+    public HashSet<GameEntity> getProducedEntities() {
+        return producedEntities;
+    }
+
 
     public void addProducedEntity(String entityName){
         GameEntity foundEntity = GameState.getEntitiesByType(GameEntity.class).get(entityName);
@@ -120,11 +130,6 @@ public class GameAction {
         );
         return requiredEntities;
     }
-
-
-
-
-
 
 
 }

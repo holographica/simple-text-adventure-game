@@ -102,4 +102,34 @@ public class Location extends GameEntity {
     public void removeCharacter(String charName){
         this.characters.remove(charName);
     }
+
+    public void addEntity(GameEntity entity){
+        if (entity instanceof Artefact){
+            addArtefact((Artefact) entity);
+        }
+        else if (entity instanceof GameCharacter){
+            addCharacter((GameCharacter) entity);
+        }
+        else if (entity instanceof Furniture){
+            addFurniture((Furniture) entity);
+        }
+        else if (entity instanceof Location){
+            addPath((Location) entity);
+        }
+    }
+
+    public void removeEntity(String entityName){
+        if (this.artefacts.containsKey(entityName)){
+            this.artefacts.remove(entityName);
+        }
+        else if (this.characters.containsKey(entityName)){
+            this.characters.remove(entityName);
+        }
+        else if  (this.furniture.containsKey(entityName)){
+            this.furniture.remove(entityName);
+        }
+        else this.pathsFromLocation.remove(entityName);
+    }
+
+
 }

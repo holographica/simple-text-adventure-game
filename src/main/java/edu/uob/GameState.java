@@ -120,5 +120,14 @@ public class GameState {
         actionList = newList;
     }
 
+    public Location getEntityLocation(String entityName){
+        for (Location location : this.getLocations().values()) {
+            if (location.getAccessibleEntities().containsKey(entityName)) {
+                return location;
+            }
+        }
+        return null;
+    }
+
 
 }

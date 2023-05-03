@@ -2,7 +2,7 @@ package edu.uob;
 
 import java.util.*;
 
-public class CommandHandler {
+public class UserCommandHandler {
     private String command;
     private ArrayList<String> tokens;
     private Player currentPlayer;
@@ -39,7 +39,7 @@ public class CommandHandler {
     private String responseString;
 
     // command handler constructor
-    public CommandHandler(String command, GameState gameState) {
+    public UserCommandHandler(String command, GameState gameState) {
         this.gameState = gameState;
 
         String[] splitCmd = command.toLowerCase().split(":",2);
@@ -71,6 +71,15 @@ public class CommandHandler {
         return this.accessibleLocations;
     }
 
+    public void checkRequiredEntities(HashMap<String,GameEntity> requiredEntities){
+        if (requiredEntities.containsKey("health") && this.getCurrentPlayer().getPlayerHealth()>0){
+            requiredEntities.remove("health");
+        }
+        if (!accessibleEntities.keySet().containsAll(requiredEntities.keySet())){
+            setResponseString("Error: don't have access to required entities");
+        }
+    }
+
     public void setAccessibleEntities(){
         this.accessibleEntities = new HashMap<>();
         String locationName = this.currentPlayer.getCurrentLocation();
@@ -81,6 +90,10 @@ public class CommandHandler {
         for (Artefact e: this.currentPlayer.getInventory().values()){
             this.addAccessibleEntity(e);
         }
+        // get health of player?
+
+//        GameEntity health = this.currentPlayer.;
+//        this.accessibleEntities.
     }
 
     public void addAccessibleEntity(GameEntity newEntity){
@@ -194,41 +207,18 @@ public class CommandHandler {
 //                    System.out.println("trigger ie keyphrase: " + trigger + "  | actionset: "+ actionSet + "\n");
                     actionSet.forEach(
                         action -> {
-//                            System.out.println("first action in set:");
-                            // get required entities
-                            // get accessible entities
-                            // compare them
-//                            System.out.println("required: " + action.getRequiredEntities());
-//                            System.out.println("accessible: " + this.accessibleEntities);
-
-                            // if all required entities are present in accessible entities
-                            // this is good
-                            // otherwise error
-                            HashMap<String, GameEntity> requiredEntities = action.getRequiredEntities();
-                            if (!accessibleEntities.keySet().containsAll(requiredEntities.keySet())){
-//                                System.out.println("don't have access to required entities for " + trigger);
-                                setResponseString("Error: don't have access to required entities");
-//                                actionSet.remove(action);
-                            }
+                            checkRequiredEntities(action.getRequiredEntities());
                         }
                     );
-//                    System.out.println("HAVE ACCESS");
-//                    System.out.println("total actions:" );
-//                    for (GameAction action: actionSet){
-//                        System.out.println(action.getTriggers());
-//                    }
-                    System.out.println("GOT HERE ONE");
                     if (actionSet.isEmpty()) {
 //                        System.out.println("empty set - removed " + trigger);
                         triggersToRemove.add(trigger);
                     }
 
                     else if (actionSet.size() > 1) {
-                        System.out.println("GOT HERE TWOOO");
                         setResponseString("Error: too many possible actions");
                     }
                     else {
-                        System.out.println("GOT HERE 3333");
                         System.out.println("action set : " + actionSet);
                         uniqueActions.addAll(actionSet);
                     }
@@ -249,20 +239,135 @@ public class CommandHandler {
             triggersToRemove.forEach(
                     trigger -> targetActions.remove(trigger)
             );
-            if (uniqueActions.size()==1){
-                System.out.println("target actions size 1!!");
-
-
-
-
-                // execute action here
-                // update gamestate
-                // consume/produce objects as necessary
-            }
-            else {
-                setResponseString("Error: valid commands require exactly one action");
-            }
+            executeAction(uniqueActions);
+//            if (uniqueActions.size()==1){
+//                System.out.println("target actions size 1!!");
+//                executeAction(uniqueActions);
+//                // execute action!
+//                // TODO
+//                //  HANDLE ACTUALLY DOING THE ACTION
+//                //  IE: CALL FUNCTIONS!
+//
+//
+//                // execute action here
+//                // update gamestate
+//                // consume/produce objects as necessary
+//            }
+//            else {
+//                setResponseString("Error: valid commands require exactly one action");
+//            }
         }
+
+        return this.responseString;
+    }
+
+    public void executeAction(HashSet<GameAction> uniqueActions) {
+        if (uniqueActions.size() != 1) {
+            setResponseString("Error: valid commands require exactly one action");
+        } else {
+            uniqueActions.forEach(
+                action -> {
+
+                    // get what it consumes
+                    // remove this from the location or player
+                    // send to storeroom
+                    action.getConsumedEntities().forEach(
+                        entity -> consumeEntity(entity)
+                    );
+                    action.getProducedEntities().forEach(
+                            entity -> {produceEntity(entity);}
+                    );
+                }
+            );
+        }
+    }
+
+    public void consumeEntity(GameEntity entity) {
+        Player currPlayer = this.getCurrentPlayer();
+        if (entity.getName().equalsIgnoreCase("health")){
+            currPlayer.decreasePlayerHealth();
+            return;
+        }
+        Location currLocation = gameState.getLocationByName(currPlayer.getCurrentLocation());
+        Location storeroom = gameState.getLocationByName("storeroom");
+        if (entity instanceof Artefact) {
+            currPlayer.removeFromInventory((Artefact) entity);
+        }
+        currLocation.removeEntity(entity.getName());
+        storeroom.addEntity(entity);
+    }
+
+    public void produceEntity(GameEntity entity) {
+        if (entity.getName().equalsIgnoreCase("health")) {
+            this.getCurrentPlayer().increasePlayerHealth();
+            return;
+        }
+        Location newLocation = gameState.getLocationByName(this.getCurrentPlayer().getCurrentLocation());
+        if (!(entity instanceof Location)){
+            Location priorLocation = gameState.getEntityLocation(entity.getName());
+            priorLocation.removeEntity(entity.getName());
+        }
+        newLocation.addEntity(entity);
+    }
+
+        // move from current location (DOESNT MATTER WHERE)
+        // TO CURRENT LOCATION
+
+//            if (entity instanceof Artefact){
+//
+////            if (this.getCurrentPlayer().getInventory().containsKey(entity.getName())) {
+////                this.getCurrentPlayer().removeFromInventory((Artefact) entity);
+////            }
+//            if (currPlayer.getInventory().containsKey(entity.getName())) {
+//                currPlayer.removeFromInventory((Artefact) entity);
+//            }
+//            else if (currLocation.getAccessibleEntities().containsKey(entity.getName())) {
+//                currLocation.removeEntity(entity.getName());
+
+
+
+//    public void consumeArtefact(Artefact artefact, Location currLocation, Location storeroom){
+//        Player currPlayer = this.getCurrentPlayer();
+//        if (currPlayer.getInventory().containsKey(artefact.getName())){
+//            currPlayer.removeFromInventory(artefact);
+//        }
+//        else if (currLocation.getArtefacts().containsKey(artefact.getName())){
+//            currLocation.removeArtefact(artefact.getName());
+//        }
+//        storeroom.addArtefact(artefact);
+//    }
+//
+//    public void consumeCharacter(GameCharacter character, Location currLocation, Location storeroom){
+//        if (currLocation.getCharacters().containsKey(character.getName())){
+//            currLocation.removeCharacter(character.getName());
+//        }
+//        storeroom.addCharacter(character);
+//    }
+//
+//    public void consumeFurniture(Furniture furniture, Location currLocation, Location storeroom){
+//        if (currLocation.getFurniture().containsKey(furniture.getName())){
+//            currLocation.removeEntity(furniture.getName());
+//        }
+//        storeroom.addFurniture(furniture);
+//    }
+
+
+
+
+        // target actions will only contain 1 action
+
+
+        // HAVE ALREADY CHECKED THAT SUBJECTS ARE ACCESSIBLE
+        // SO:
+
+        // CONSUME STUFF
+        // PRODUCE STUFF
+        // UPDATE STUFF
+        // THATS IT????
+
+
+
+
 
 
             // for each key, go through hashset
@@ -307,8 +412,6 @@ public class CommandHandler {
             // IF BASIC CMD LIST.ISEMPTY && ACTION LIST.SIZE ! EMPTY
                 // CALL ACTION HANDLER
 
-        return this.responseString;
-    }
 
     public void basicCommandHandler(){
         // should have already checked that size of basic cmd list ==1
@@ -501,7 +604,6 @@ public class CommandHandler {
 
     public void checkIfAction(String triggerPhrase){
         if (this.gameState.getActions().containsKey(triggerPhrase)){
-            System.out.println("PHRASEEEE: "+ triggerPhrase + "\n\n");
             if (targetActions.containsKey(triggerPhrase)){
                 setResponseString("Error: duplicate actions found in command");
             }

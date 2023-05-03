@@ -9,7 +9,6 @@ import java.io.OutputStreamWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -67,7 +66,7 @@ public final class GameServer {
         strb.append(temp.get(0));
         checkNewPlayer(strb.toString());
 
-        CommandHandler handler = new CommandHandler(command, this.gameState);
+        UserCommandHandler handler = new UserCommandHandler(command, this.gameState);
         return handler.parseCommand();
     }
 
