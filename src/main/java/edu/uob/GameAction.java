@@ -1,21 +1,49 @@
 package edu.uob;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
+/**
+ * A class to hold instances of game actions.
+ * The class holds various action parameters,
+ * including subject entities and trigger phrases.
+ */
 public class GameAction {
+    /**
+     * Holds the message returned when the action is successfully executed.
+     */
     private String narration;
-    private Set<String> triggers;
-    private Set<GameEntity> subjectEntities;
-
-    // for basic cmds these are target artefacts/locations/chars etc
-    private Set<GameEntity> consumedEntities;
-    private Set<GameEntity> producedEntities;
+    /**
+     * A set containing the action's trigger phrases.
+     */
+    private final Set<String> triggers;
+    /**
+     * A set containing entities that are designated
+     * as subjects of the action.
+     */
+    private final Set<GameEntity> subjectEntities;
+    /**
+     * A set containing entities that are designated
+     * to be consumed by the action.
+     */
+    private final Set<GameEntity> consumedEntities;
+    /**
+     * A set containing entities that are designated
+     * to be produced by the action.
+     */
+    private final Set<GameEntity> producedEntities;
+    /**
+     * A flag to denote whether the action consumes health.
+     */
     private boolean consumesHealth;
+    /**
+     * A flag to denote whether the action produces health.
+     */
     private boolean producesHealth;
 
+    /**
+     * A class constructor for a game action, where
+     * class variables are initialised.
+     */
     public GameAction(){
         this.narration = "";
         this.triggers = new HashSet<>();
@@ -27,80 +55,116 @@ public class GameAction {
     }
 
     @Override
-    public boolean equals(Object actionToCompare) {
-        if (this == actionToCompare) return true;
-        if (actionToCompare == null || this.getClass() != actionToCompare.getClass()) {
-            return false;
+    public boolean equals(final Object actionToCompare) {
+        boolean doesEqual=true;
+        if (this == actionToCompare) {
+            return doesEqual;
         }
-        GameAction newAction = (GameAction) actionToCompare;
+        if (actionToCompare == null || this.getClass() != actionToCompare.getClass()) {
+            doesEqual = false;
+        }
+        final GameAction newAction = (GameAction) actionToCompare;
         if (!Objects.equals(this.triggers, newAction.triggers)) {
-            return false;
+            doesEqual = false;
         }
         else if (!Objects.equals(this.subjectEntities, newAction.subjectEntities)){
-            return false;
+            doesEqual = false;
         }
         else if (!Objects.equals(this.consumedEntities, newAction.consumedEntities)){
-            return false;
+            doesEqual = false;
         }
         else if (!Objects.equals(this.producedEntities, newAction.producedEntities)){
-            return false;
+            doesEqual = false;
         }
-        else return Objects.equals(this.narration, newAction.narration);
+        else if (!Objects.equals(this.narration, newAction.narration)){
+            doesEqual = false;
+        }
+        return doesEqual;
     }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(triggers, subjectEntities, consumedEntities, producedEntities, narration);
+    }
+
 
     public String getNarration(){
         return this.narration;
     }
 
-    public void setNarration(String newNarration){
+    public void setNarration(final String newNarration){
         this.narration = newNarration;
     }
 
-    public HashSet<String> getTriggers(){
-        return this.triggers;
+    /**
+     * A method to get all trigger phrases of an action.
+     */
+    public Set<String> getTriggers(){
+        return new HashSet<>(this.triggers);
     }
 
-    public void addTrigger(String triggerPhrase){
+    /**
+     * A method to add a trigger phrase to the list of trigger
+     * phrases for a given game action instance.
+     */
+    public void addTrigger(final String triggerPhrase){
         this.triggers.add(triggerPhrase);
     }
 
-    public HashSet<GameEntity> getSubjectEntities() {
-        return subjectEntities;
-    }
-
-    public void setSubjectEntities(HashSet<GameEntity> subjectEntities) {
-        this.subjectEntities = subjectEntities;
-    }
-
-    public void addSubjectEntity(String entityName){
-        GameEntity foundEntity = GameState.getEntitiesByType(GameEntity.class).get(entityName);
-        if (foundEntity != (null)){
+    /**
+     * A method to add an entity to the list of subject entities
+     * for a given game action instance.
+     */
+    public void addSubjectEntity(final String entityName){
+        final GameEntity foundEntity = GameState.getEntitiesByType(GameEntity.class).get(entityName);
+        if (foundEntity != null){
             this.subjectEntities.add(foundEntity);
         }
     }
 
-    public HashSet<GameEntity> getConsumedEntities() {
-        return consumedEntities;
+    /**
+     * A method to get the list of consumed entities
+     * for a given game action instance.
+     */
+    public Set<GameEntity> getConsumedEntities() {
+        return new HashSet<>(this.consumedEntities);
     }
 
-    public void addConsumedEntity(String entityName){
-        GameEntity foundEntity = GameState.getEntitiesByType(GameEntity.class).get(entityName);
-        if (foundEntity != (null)){
+    /**
+     * A method to add an entity to the list of consumed entities
+     * for a given game action instance.
+     */
+    public void addConsumedEntity(final String entityName){
+        final GameEntity foundEntity = GameState.getEntitiesByType(GameEntity.class).get(entityName);
+        if (foundEntity != null){
             this.consumedEntities.add(foundEntity);
         }
-        else if ("health".equalsIgnoreCase(entityName)){
+        final Location location = GameState.getLocationByName(entityName);
+        if (location != null){
+            System.out.println("ADDED: "+entityName);
+            this.consumedEntities.add(location);
+        }
+        if ("health".equalsIgnoreCase(entityName)){
             this.setConsumesHealth();
         }
     }
 
-    public HashSet<GameEntity> getProducedEntities() {
-        return this.producedEntities;
+    /**
+     * A method to get the list of produced entities
+     * for a given game action instance.
+     */
+    public Set<GameEntity> getProducedEntities() {
+        return new HashSet<>(this.producedEntities);
     }
 
 
-    public void addProducedEntity(String entityName){
-        GameEntity foundEntity = GameState.getEntitiesByType(GameEntity.class).get(entityName);
-        if (foundEntity != (null)){
+    /**
+     * A method to add an entity to the list of produced entities
+     * for a given game action instance.
+     */
+    public void addProducedEntity(final String entityName){
+        final GameEntity foundEntity = GameState.getEntitiesByType(GameEntity.class).get(entityName);
+        if (foundEntity != null){
             this.producedEntities.add(foundEntity);
         }
         else if ("health".equalsIgnoreCase(entityName)) {
@@ -108,35 +172,49 @@ public class GameAction {
         }
     }
 
+    /**
+     * A method to set the flag that denotes
+     * whether the action consumes health.
+     */
     public void setConsumesHealth(){
         this.consumesHealth=true;
     }
 
+    /**
+     * A method to check whether the action consumes health.
+     */
     public boolean doesConsumeHealth(){
         return this.consumesHealth;
     }
 
+    /**
+     * A method to set the flag that denotes
+     * whether the action produces health.
+     */
     public void setProducesHealth(){
         this.producesHealth=true;
     }
 
+    /**
+     * A method to check whether the action produces health.
+     */
     public boolean doesProduceHealth(){
         return this.producesHealth;
     }
 
-    public HashMap<String, GameEntity> getRequiredEntities(){
-        HashMap<String, GameEntity> requiredEntities = new HashMap<>();
+    /**
+     * A method to get a mapping of all entities required
+     * for the successful execution of a given action.
+     */
+    public Map<String, GameEntity> getRequiredEntities(){
+        final HashMap<String, GameEntity> requiredEntities = new HashMap<>();
         this.subjectEntities.forEach(
-                entity -> {
-                    requiredEntities.put(entity.getName(), entity);
-                }
+                entity -> requiredEntities.put(entity.getName(), entity)
         );
         this.consumedEntities.forEach(
-                entity -> {
-                    requiredEntities.put(entity.getName(), entity);
-                }
+                entity -> requiredEntities.put(entity.getName(), entity)
         );
-        return requiredEntities;
+        return new HashMap<>(requiredEntities);
     }
 
 

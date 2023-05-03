@@ -59,15 +59,13 @@
             <keyphrase>burn</keyphrase>
         </triggers>
         <subjects>
-            <entity>potion</entity>
         </subjects>
         <consumed>
             <entity>clearing</entity>
         </consumed>
         <produced>
-            <entity>log</entity>
         </produced>
-        <narration>You burn the bridge with an unhinged smile on your face</narration>
+        <narration>You burn the bridge</narration>
     </action>
 
     <action>

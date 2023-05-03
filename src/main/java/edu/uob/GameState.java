@@ -3,14 +3,15 @@ package edu.uob;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
+import java.util.Map;
 
 public class GameState {
     private static HashMap<String, Location> locations;
     private static Location startLocation;
-    private HashMap<String, Player> playerList;
+    private final HashMap<String, Player> playerList;
     private Player currentPlayer;
-    private static HashMap<String, GameEntity> entityList;
-    private static HashMap<String, HashSet<GameAction>> actionList;
+    private static Map<String, GameEntity> entityList;
+    private static Map<String, HashSet<GameAction>> actionList;
 
     public GameState(){
         locations  = new HashMap<>();
@@ -31,15 +32,17 @@ public class GameState {
     }
 
     public HashMap<String, HashSet<GameAction>> getActions(){
-        return actionList;
+        return new HashMap<>(actionList);
     }
 
     public HashSet<GameAction> getActionsByTrigger(String trigger){
         return actionList.getOrDefault(trigger, null);
     }
 
-    public HashMap<String, Player> getPlayerList(){
-        return this.playerList;
+    public HashMap<String, Player> getOtherPlayers(){
+        HashMap<String, Player> otherPlayers = new HashMap<>(this.playerList);
+        otherPlayers.remove(currentPlayer.getName());
+        return otherPlayers;
     }
 
     public Player getPlayerByName(String playerName){
@@ -59,10 +62,6 @@ public class GameState {
                 entitiesByType.put(entity.getName(), type.cast(entity));
             }
         });
-//        HashMap<String, Player> playersHere = getOtherPlayersAtLocation();
-//        playersHere.values().forEach (
-//                player -> entitiesByType.put(player.getName(), type.cast(player))
-//        );
         return entitiesByType;
     }
 
@@ -74,21 +73,31 @@ public class GameState {
         return getEntitiesByType(GameCharacter.class);
     }
 
+    public HashMap<String, Location> getAllLocations() {
+        return getEntitiesByType(Location.class);
+    }
+
     public HashMap<String, Furniture> getAllFurniture() {
         return getEntitiesByType(Furniture.class);
+    }
+
+    public static Map<String, GameEntity> getEntityList() {
+        return new HashMap<>(entityList);
+    }
+
+    public static Map<String, HashSet<GameAction>> getActionList(){
+        return new HashMap<>(actionList);
     }
 
     public void addLocation(Location newLocation){
         locations.put(newLocation.getName(),newLocation);
     }
-
     public void addPlayer(Player newPlayer){
         this.playerList.put(newPlayer.getName(), newPlayer);
     }
     public void setCurrentPlayer(Player currPlayer){
         this.currentPlayer = currPlayer;
     }
-
 
     // TODO
     //  when do i use this? during look command?
@@ -106,18 +115,16 @@ public class GameState {
         startLocation = location;
     }
 
-    public void setEntityList(HashMap<String, GameEntity> newList){
-        entityList = newList;
+    public void setEntityList(Map<String, GameEntity> newList){
+        entityList = new HashMap<>(newList);
         getAllArtefacts();
         getAllFurniture();
         getAllCharacters();
-
+        getAllLocations();
     }
 
-    // TODO
-    //  do i actually need this anywhere? probs not? delete if not
-    public void setActionList(HashMap<String, HashSet<GameAction>> newList){
-        actionList = newList;
+    public void setActionList(Map<String, HashSet<GameAction>> newList){
+        actionList = new HashMap<>(newList);
     }
 
     public Location getEntityLocation(String entityName){
@@ -128,6 +135,4 @@ public class GameState {
         }
         return null;
     }
-
-
 }

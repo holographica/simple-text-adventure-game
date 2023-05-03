@@ -9,61 +9,56 @@ import java.util.HashMap;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class ParseEntitiesTests {
-
-    private GameServer server;
-    private GameParser parser;
+final class ParseEntitiesTests {
 
     @BeforeEach
     void setup() {
         File entitiesFile = Paths.get("config" + File.separator + "extended-entities.dot").toAbsolutePath().toFile();
-        File actionsFile = Paths.get("config" + File.separator + "extended-actions.xml").toAbsolutePath().toFile();
-        server = new GameServer(entitiesFile, actionsFile);
-        parser = new GameParser(entitiesFile, actionsFile);
-        parser.parseEntities();
+        File actionsFile = Paths.get("config" + File.separator + "test-actions.xml").toAbsolutePath().toFile();
+        GameParser parser = new GameParser(entitiesFile, actionsFile);
+        parser.getGameState();
     }
 
 
     @Test
     void testLocationsExist() {
-        assertTrue(parser.entityList.containsKey("cabin"));
-        assertTrue(parser.entityList.containsKey("storeroom"));
-        assertTrue(parser.entityList.containsKey("forest"));
-        assertTrue(parser.entityList.containsKey("cellar"));
-        assertTrue(parser.entityList.containsKey("riverbank"));
-        assertTrue(parser.entityList.containsKey("clearing"));
-        assertTrue(parser.entityList.containsKey("riverbank"));
+        assertTrue(GameState.getEntityList().containsKey("cabin"),"Entity list should contain cabin");
+        assertTrue(GameState.getEntityList().containsKey("storeroom"),"Entity list should contain storeroom");
+        assertTrue(GameState.getEntityList().containsKey("forest"),"Entity list should contain forest");
+        assertTrue(GameState.getEntityList().containsKey("cellar"),"Entity list should contain cellar");
+        assertTrue(GameState.getEntityList().containsKey("riverbank"),"Entity list should contain riverbank");
+        assertTrue(GameState.getEntityList().containsKey("clearing"),"Entity list should contain clearing");
     }
 
     @Test
     void testLocationDescriptions(){
-        GameEntity tempLocation = parser.entityList.get("cabin");
-        assertEquals("A log cabin in the woods", tempLocation.getDescription());
-        tempLocation = parser.entityList.get("forest");
+        Location tempLocation = GameState.getLocationByName("cabin");
+        assertEquals("A log cabin in the woods", tempLocation.getDescription(),"Entity list should contain cabin");
+        tempLocation = GameState.getLocationByName("forest");
         assertEquals("A deep dark forest", tempLocation.getDescription());
-        tempLocation = parser.entityList.get("cellar");
+        tempLocation = GameState.getLocationByName("cellar");
         assertEquals("A dusty cellar", tempLocation.getDescription());
-        tempLocation = parser.entityList.get("riverbank");
+        tempLocation = GameState.getLocationByName("riverbank");
         assertEquals("A grassy riverbank", tempLocation.getDescription());
-        tempLocation = parser.entityList.get("clearing");
+        tempLocation = GameState.getLocationByName("clearing");
         assertEquals("A clearing in the woods", tempLocation.getDescription());
-        tempLocation = parser.entityList.get("storeroom");
+        tempLocation = GameState.getLocationByName("storeroom");
         assertEquals("Storage for any entities not placed in the game", tempLocation.getDescription());
     }
 
     @Test
     void testCharsAtLocation(){
-        Location tempLocation = (Location) parser.entityList.get("cellar");
+        Location tempLocation = GameState.getLocationByName("cellar");
         GameCharacter tempCharacter = tempLocation.getCharacters().get("elf");
         assertEquals(tempCharacter.getDescription(),"An angry looking Elf");
-        tempLocation = (Location) parser.entityList.get("storeroom");
+        tempLocation = GameState.getLocationByName("storeroom");
         tempCharacter =  tempLocation.getCharacters().get("lumberjack");
         assertEquals(tempCharacter.getDescription(), "A burly wood cutter");
     }
 
     @Test
     void testArtefactsAtLocation(){
-        Location tempLocation = (Location) parser.getEntityList().get("cabin");
+        Location tempLocation = GameState.getLocationByName("cabin");
         Artefact tempArtefact = tempLocation.getArtefacts().get("potion");
         assertEquals(tempArtefact.getDescription(),"A bottle of magic potion");
         tempArtefact = tempLocation.getArtefacts().get("axe");
@@ -71,15 +66,15 @@ public class ParseEntitiesTests {
         tempArtefact = tempLocation.getArtefacts().get("coin");
         assertEquals(tempArtefact.getDescription(),"A silver coin");
 
-        tempLocation = (Location) parser.getEntityList().get("forest");
+        tempLocation = GameState.getLocationByName("forest");
         tempArtefact =  tempLocation.getArtefacts().get("key");
         assertEquals(tempArtefact.getDescription(), "A rusty old key");
 
-        tempLocation = (Location) parser.getEntityList().get("riverbank");
+        tempLocation = GameState.getLocationByName("riverbank");
         tempArtefact =  tempLocation.getArtefacts().get("horn");
         assertEquals(tempArtefact.getDescription(), "An old brass horn");
 
-        tempLocation = (Location) parser.getEntityList().get("storeroom");
+        tempLocation = GameState.getLocationByName("storeroom");
         tempArtefact =  tempLocation.getArtefacts().get("log");
         assertEquals(tempArtefact.getDescription(), "A heavy wooden log");
         tempArtefact =  tempLocation.getArtefacts().get("shovel");
@@ -90,57 +85,56 @@ public class ParseEntitiesTests {
 
     @Test
     void testFurnitureAtLocation() {
-        Location tempLocation = (Location) parser.getEntityList().get("cabin");
+        Location tempLocation = GameState.getLocationByName("cabin");
         Furniture tempFurniture = tempLocation.getFurniture().get("trapdoor");
         assertEquals(tempFurniture.getDescription(), "A locked wooden trapdoor in the floor");
 
-        tempLocation = (Location) parser.getEntityList().get("forest");
+        tempLocation = GameState.getLocationByName("forest");
         tempFurniture = tempLocation.getFurniture().get("tree");
         assertEquals(tempFurniture.getDescription(), "A tall pine tree");
 
-        tempLocation = (Location) parser.getEntityList().get("riverbank");
+        tempLocation = GameState.getLocationByName("riverbank");
         tempFurniture = tempLocation.getFurniture().get("river");
         assertEquals(tempFurniture.getDescription(), "A fast flowing river");
 
-        tempLocation = (Location) parser.getEntityList().get("clearing");
+        tempLocation = GameState.getLocationByName("clearing");
         tempFurniture = tempLocation.getFurniture().get("ground");
         assertEquals(tempFurniture.getDescription(), "It looks like the soil has been recently disturbed");
 
-        tempLocation = (Location) parser.getEntityList().get("storeroom");
+        tempLocation = GameState.getLocationByName("storeroom");
         tempFurniture = tempLocation.getFurniture().get("hole");
         assertEquals(tempFurniture.getDescription(), "A deep hole in the ground");
     }
 
     @Test
     void testPathsFromLocation() {
-        Location tempLocation = (Location) parser.getEntityList().get("cabin");
+        Location tempLocation = GameState.getLocationByName("cabin");
         Location pathTo = tempLocation.getPaths().get("forest");
         assertEquals(pathTo.getDescription(), "A deep dark forest");
 
-        tempLocation = (Location) parser.getEntityList().get("forest");
+        tempLocation = GameState.getLocationByName("forest");
         pathTo = tempLocation.getPaths().get("cabin");
         assertEquals(pathTo.getDescription(), "A log cabin in the woods");
 
-        tempLocation = (Location) parser.getEntityList().get("cellar");
         pathTo = tempLocation.getPaths().get("cabin");
         assertEquals(pathTo.getDescription(), "A log cabin in the woods");
 
-        tempLocation = (Location) parser.getEntityList().get("forest");
+        tempLocation = GameState.getLocationByName("forest");
         pathTo = tempLocation.getPaths().get("riverbank");
         assertEquals(pathTo.getDescription(), "A grassy riverbank");
 
-        tempLocation = (Location) parser.getEntityList().get("riverbank");
+        tempLocation = GameState.getLocationByName("riverbank");
         pathTo = tempLocation.getPaths().get("forest");
         assertEquals(pathTo.getDescription(), "A deep dark forest");
 
-        tempLocation = (Location) parser.getEntityList().get("clearing");
+        tempLocation = GameState.getLocationByName("clearing");
         pathTo = tempLocation.getPaths().get("riverbank");
         assertEquals(pathTo.getDescription(), "A grassy riverbank");
     }
 
     @Test
     void testEntityList(){
-        HashMap<String, GameEntity> tempList = parser.getEntityList();
+        HashMap<String, GameEntity> tempList = new HashMap<>(GameState.getEntityList());
         GameEntity tempEntity = tempList.get("cabin");
         assertEquals(tempEntity.getDescription(), "A log cabin in the woods");
 

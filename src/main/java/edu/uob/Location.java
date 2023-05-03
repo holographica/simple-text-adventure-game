@@ -5,10 +5,10 @@ import com.alexmerz.graphviz.objects.Node;
 import java.util.HashMap;
 
 public class Location extends GameEntity {
-    private HashMap<String, Location> pathsFromLocation;
-    private HashMap<String, Artefact> artefacts;
-    private HashMap<String, GameCharacter> characters;
-    private HashMap<String, Furniture> furniture;
+    private final HashMap<String, Location> pathsFromLocation;
+    private final HashMap<String, Artefact> artefacts;
+    private final HashMap<String, GameCharacter> characters;
+    private final HashMap<String, Furniture> furniture;
 
     public Location(Node newEntity) {
         super(newEntity);
@@ -44,6 +44,9 @@ public class Location extends GameEntity {
         );
         this.getFurniture().values().forEach(
                 furniture -> accessibleEntities.put(furniture.getName(),furniture)
+        );
+        this.pathsFromLocation.values().forEach(
+                path -> accessibleEntities.put(path.getName(),path)
         );
         return accessibleEntities;
     }
@@ -98,10 +101,6 @@ public class Location extends GameEntity {
         this.artefacts.remove(artefactName);
     }
 
-    public void removeCharacter(String charName){
-        this.characters.remove(charName);
-    }
-
     public void addEntity(GameEntity entity){
         if (entity instanceof Artefact){
             addArtefact((Artefact) entity);
@@ -117,17 +116,15 @@ public class Location extends GameEntity {
         }
     }
 
+    public void removePath(String pathTo){
+        this.pathsFromLocation.remove(pathTo);
+    }
+
     public void removeEntity(String entityName){
-        if (this.artefacts.containsKey(entityName)){
-            this.artefacts.remove(entityName);
-        }
-        else if (this.characters.containsKey(entityName)){
-            this.characters.remove(entityName);
-        }
-        else if  (this.furniture.containsKey(entityName)){
-            this.furniture.remove(entityName);
-        }
-        else this.pathsFromLocation.remove(entityName);
+        this.artefacts.remove(entityName);
+        this.characters.remove(entityName);
+        this.furniture.remove(entityName);
+        this.pathsFromLocation.remove(entityName);
     }
 
 

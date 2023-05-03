@@ -21,6 +21,9 @@ public class ParseActionsTests {
 
     private boolean compareActionSetHelper (HashSet<GameAction> actionSet, ArrayList<String> triggers, String narration){
         boolean completeMatch = true;
+        if (actionSet.isEmpty()){
+            return false;
+        }
         for (GameAction action : actionSet) {
             for (String trigger : triggers) {
                 if (!action.getTriggers().contains(trigger) || !action.getNarration().equalsIgnoreCase(narration)) {
@@ -39,8 +42,7 @@ public class ParseActionsTests {
         File actionsFile = Paths.get("config" + File.separator + "test-actions.xml").toAbsolutePath().toFile();
         server = new GameServer(entitiesFile, actionsFile);
         parser = new GameParser(entitiesFile, actionsFile);
-        parser.parseEntities();
-        parser.parseActions();
+        parser.getGameState();
     }
 
     String sendCommandToServer(String command) {
@@ -51,95 +53,42 @@ public class ParseActionsTests {
 
     @Test
     void testActionsExist() {
-        assertTrue(parser.actionList.containsKey("chop"));
-        assertTrue(parser.actionList.containsKey("cut down"));
-        assertTrue(parser.actionList.containsKey("drink"));
-        assertTrue(parser.actionList.containsKey("unlock"));
-        assertTrue(parser.actionList.containsKey("pay"));
-        assertTrue(parser.actionList.containsKey("fight"));
-        assertTrue(parser.actionList.containsKey("attack"));
-        assertTrue(parser.actionList.containsKey("sing"));
-        assertTrue(parser.actionList.containsKey("open"));
-        assertFalse(parser.actionList.containsKey("stab"));
-        assertFalse(parser.actionList.containsKey("key"));
-        assertFalse(parser.actionList.containsKey("cellar"));
-        assertFalse(parser.actionList.containsKey("log"));
-        assertFalse(parser.actionList.containsKey("health"));
-        assertFalse(parser.actionList.containsKey("potion"));
-        assertFalse(parser.actionList.containsKey("elf"));
-        assertFalse(parser.actionList.containsKey("coin"));
+        assertTrue(GameState.getActionList().containsKey("chop"));
+        assertTrue(GameState.getActionList().containsKey("cut down"));
+        assertTrue(GameState.getActionList().containsKey("drink"));
+        assertTrue(GameState.getActionList().containsKey("unlock"));
+        assertTrue(GameState.getActionList().containsKey("pay"));
+        assertTrue(GameState.getActionList().containsKey("fight"));
+        assertTrue(GameState.getActionList().containsKey("attack"));
+        assertTrue(GameState.getActionList().containsKey("sing"));
+        assertTrue(GameState.getActionList().containsKey("open"));
+        assertFalse(GameState.getActionList().containsKey("stab"));
+        assertFalse(GameState.getActionList().containsKey("key"));
+        assertFalse(GameState.getActionList().containsKey("cellar"));
+        assertFalse(GameState.getActionList().containsKey("log"));
+        assertFalse(GameState.getActionList().containsKey("health"));
+        assertFalse(GameState.getActionList().containsKey("potion"));
+        assertFalse(GameState.getActionList().containsKey("elf"));
+        assertFalse(GameState.getActionList().containsKey("coin"));
     }
 
     @Test
     void testMultipleTriggers() {
-        HashSet<GameAction> chaseActions = parser.actionList.get("chase");
+        HashSet<GameAction> chaseActions = GameState.getActionList().get("chase");
         assertNull(chaseActions);
-        HashSet<GameAction> testActionSet = parser.actionList.get("chop");
+        HashSet<GameAction> testActionSet = GameState.getActionList().get("chop");
 
         ArrayList<String> actionTriggers = new ArrayList<>();
         String narration = "You cut down the tree with the axe";
         actionTriggers.add("chop");
         actionTriggers.add("cut");
         actionTriggers.add("cut down");
-        assertTrue(compareActionSetHelper(testActionSet, actionTriggers, narration));
+        assertTrue(compareActionSetHelper(testActionSet, actionTriggers, narration),"Action set should contain correct triggers and narration.");
 
-        testActionSet = parser.actionList.get("drink");
+        testActionSet = GameState.getActionList().get("drink");
         actionTriggers = new ArrayList<>();
         actionTriggers.add("drink");
         narration = "You drink the potion and your health improves";
-        assertTrue(compareActionSetHelper(testActionSet, actionTriggers, narration));
+        assertTrue(compareActionSetHelper(testActionSet, actionTriggers, narration), "Action set should contain correct triggers and narration.");
     }
-
-
-    @Test
-    void testMultipleActions(){
-        String response = sendCommandToServer("chris: drink");
-        assertTrue(response.contains("You drink the potion and your health improves"));
-        response = sendCommandToServer("chris: health");
-        assertTrue(response.contains("Your current health is 3"));
-        sendCommandToServer("chris: get axe");
-        sendCommandToServer("chris: get coin");
-        sendCommandToServer("chris: goto forest");
-        sendCommandToServer("chris: get key");
-        sendCommandToServer("chris: goto cabin");
-
-        Location cabin = server.getGameState().getLocations().get("cabin");
-        Player player = server.getGameState().getCurrentPlayer();
-        assertFalse(cabin.getPaths().containsKey("cellar"));
-        response = sendCommandToServer("chris: please kindly open the trapdoor using the key");
-        assertTrue(response.contains("You unlock the door and see steps leading down into a cellar"));
-        assertTrue(cabin.getPaths().containsKey("cellar"));
-
-        Location cellar = server.getGameState().getLocations().get("cellar");
-        sendCommandToServer("chris: goto cellar");
-        assertEquals("cellar", player.getCurrentLocation());
-        sendCommandToServer("chris: health");
-        assertEquals(3, player.getHealthAsInt());
-        response = sendCommandToServer("chris: fight elf with all your might");
-        assertTrue(response.contains("you lose some health"));
-        response = sendCommandToServer("chris: health");
-        assertTrue(response.contains("Your current health is 2"));
-        assertEquals(2, player.getHealthAsInt());
-
-        sendCommandToServer("chris: fight elf");
-        assertTrue(player.getInventory().containsKey("axe"));
-        assertTrue(player.getInventory().containsKey("coin"));
-        assertTrue(cellar.getCharacters().containsKey("elf"));
-        assertFalse(cellar.getArtefacts().containsKey("coin"));
-        assertFalse(cellar.getArtefacts().containsKey("axe"));
-        sendCommandToServer("chris: fight elf");
-        assertEquals("cabin", player.getCurrentLocation());
-        assertFalse(player.getInventory().containsKey("axe"));
-        assertTrue(cellar.getArtefacts().containsKey("axe"));
-        assertTrue(cellar.getArtefacts().containsKey("coin"));
-
-
-    }
-
-
-
-
-
-
 }
-

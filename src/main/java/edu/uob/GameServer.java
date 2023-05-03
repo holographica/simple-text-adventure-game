@@ -51,8 +51,12 @@ public final class GameServer {
     */
     public String handleCommand(String command) {
         checkNewPlayer(command);
-        final UserCommandHandler handler = new UserCommandHandler(command, this.gameState);
-        return handler.parseCommand();
+        try {
+            final UserCommandHandler handler = new UserCommandHandler(command, this.gameState);
+            return handler.parseCommand();
+        } catch (GameException ge){
+            return ge.getMessage();
+        }
     }
 
     /**
