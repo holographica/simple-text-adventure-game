@@ -1,19 +1,10 @@
 package edu.uob;
 
-import com.alexmerz.graphviz.ParseException;
 import com.alexmerz.graphviz.Parser;
-import com.alexmerz.graphviz.objects.*;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.util.HashMap;
+import java.util.HashSet;
 
 public class GameParser {
     File entitiesFile;

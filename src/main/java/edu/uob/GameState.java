@@ -2,7 +2,6 @@ package edu.uob;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Locale;
 import java.util.Map;
 
 public class GameState {
@@ -40,7 +39,7 @@ public class GameState {
     }
 
     public HashMap<String, Player> getOtherPlayers(){
-        HashMap<String, Player> otherPlayers = new HashMap<>(this.playerList);
+        final HashMap<String, Player> otherPlayers = new HashMap<>(this.playerList);
         otherPlayers.remove(currentPlayer.getName());
         return otherPlayers;
     }
@@ -56,7 +55,7 @@ public class GameState {
         return startLocation;
     }
     public static <T extends GameEntity> HashMap<String, T> getEntitiesByType(Class<T> type) {
-        HashMap<String, T> entitiesByType = new HashMap<>();
+        final HashMap<String, T> entitiesByType = new HashMap<>();
         entityList.values().forEach(entity -> {
             if (type.isInstance(entity)) {
                 entitiesByType.put(entity.getName(), type.cast(entity));

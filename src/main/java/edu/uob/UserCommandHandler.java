@@ -81,12 +81,13 @@ public class UserCommandHandler {
         this.targetActions = new HashMap<>();
         this.responseString="";
         setAccessibleEntities();
-        setAccessibleLocations();
+//        setAccessibleLocations();
     }
 
     private void setTokens(final String command){
         final String[] splitCmd = command.toLowerCase(Locale.ROOT).split(":",2);
         this.currentPlayer = this.gameState.getPlayerByName(splitCmd[0]);
+        gameState.setCurrentPlayer(currentPlayer);
         this.tokens = new ArrayList<>(Arrays.stream(splitCmd[1]
                         .split(" "))
                 .toList());
@@ -107,15 +108,6 @@ public class UserCommandHandler {
         if (requiredEntities.containsKey("health") && this.getCurrentPlayer().getHealthAsInt()>0){
             requiredEntities.remove("health");
         }
-        requiredEntities.values().forEach(
-                value -> System.out.println(value.getName())
-        );
-        accessibleEntities.values().forEach(
-                value -> System.out.println("ACC: "+value.getName())
-        );
-
-
-        System.out.println("ENTS:"+ requiredEntities.values().toString());
         if (!accessibleEntities.keySet().containsAll(requiredEntities.keySet())){
             throw new GameException.RequiredEntityException();
         }
@@ -143,17 +135,17 @@ public class UserCommandHandler {
         this.accessibleLocations.put(newLocation.getName(),newLocation);
     }
 
-    private void setAccessibleLocations(){
-        this.accessibleLocations = new HashMap<>();
-        final String locationName = this.currentPlayer.getCurrentLocation();
-        final Location currLocation = GameState.getLocationByName(locationName);
-        this.addAccessibleLocation(currLocation);
-        currLocation.getPaths().keySet().forEach(
-                pathTo -> {
-                    final Location pathLocation = GameState.getLocationByName(pathTo);
-                    this.addAccessibleLocation(pathLocation);
-                });
-    }
+//    private void setAccessibleLocations(){
+//        this.accessibleLocations = new HashMap<>();
+//        final String locationName = this.currentPlayer.getCurrentLocation();
+//        final Location currLocation = GameState.getLocationByName(locationName);
+//        this.addAccessibleLocation(currLocation);
+//        currLocation.getPaths().keySet().forEach(
+//                pathTo -> {
+//                    final Location pathLocation = GameState.getLocationByName(pathTo);
+//                    this.addAccessibleLocation(pathLocation);
+//                });
+//    }
 
     public String getCommand() {
         return this.command;
@@ -179,91 +171,115 @@ public class UserCommandHandler {
             checkIfAction(token);
         }
 
+        // need:
+        // list of target entities
+        // target commands
+
+        // target actions + entities
         checkMultipleWordTriggers();
         if (!targetCommands.isEmpty()) {
             if (targetCommands.size() == 1 && targetActions.isEmpty()) {
-                basicCommandHandler();
+                BasicCommandParser bp = new BasicCommandParser(command,gameState,targetCommands, getTargetEntities());
+                setResponseString(bp.basicCommandHandler());
+//                basicCommandHandler();
             } else {
                 throw new GameException.ExactlyOneCommandException();
             }
             return this.responseString;
         }
 
-//        handleActions();
-        if (!targetActions.isEmpty()) {
-            final HashSet<GameAction> uniqueActions = new HashSet<>();
-            final HashSet<String> triggersToRemove = new HashSet<>();
-            final AtomicBoolean exceptionThrown = new AtomicBoolean(false);
-            this.targetActions.forEach(
-                (trigger, actionSet) -> {
-                    if (exceptionThrown.get()){
-                        return;
-                    }
-                    actionSet.forEach(
-                        action -> {
-                            if (exceptionThrown.get()) {
-                                return;
-                            }
-                            try {
-                                checkRequiredEntities(action.getRequiredEntities());
-                            } catch (GameException e) {
-                                System.out.println("HERE ");
-                                exceptionThrown.set(true);
-                            }
-                        });
-                        if (actionSet.isEmpty()) {
-                            triggersToRemove.add(trigger);
-                        }
-                        else if (actionSet.size() > 1) {
-                            try {
-                                throw new GameException.ExactlyOneCommandException();
-                            } catch (GameException.ExactlyOneCommandException e) {
-                                exceptionThrown.set(true);
-                            }
-                        }
-                        else {
-                            uniqueActions.addAll(actionSet);
-                        }
-                    if (exceptionThrown.get()){
-                        return;
-                    }
-                }
-            );
-            if (!exceptionThrown.get()) {
-                System.out.println("TARGET ACTIONS: "+targetActions.keySet().toString());
-                System.out.println("TO REMOVE: "+triggersToRemove.toString());
-                triggersToRemove.forEach(targetActions::remove);
-                executeAction(uniqueActions);
-            }
-        }
-        return this.responseString;
-    }
-
-//    public void handleActions() throws GameException {
+        handleActions();
 //        if (!targetActions.isEmpty()) {
 //            final HashSet<GameAction> uniqueActions = new HashSet<>();
 //            final HashSet<String> triggersToRemove = new HashSet<>();
-//            for (Map.Entry<String, Set<GameAction>> entry : targetActions.entrySet()) {
-//                String trigger = entry.getKey();
-//                HashSet<GameAction> actionSet = new HashSet<>(entry.getValue());
-//                if (actionSet.isEmpty()){
-//                    triggersToRemove.add(trigger);
-//                }
-//                for (GameAction action : actionSet) {
-//                    checkRequiredEntities(action.getRequiredEntities());
-//                    if (actionSet.size() > 1) {
-//                        throw new GameException.ExactlyOneCommandException();
-//                    } else {
-//                        uniqueActions.addAll(actionSet);
+//            final AtomicBoolean exceptionThrown = new AtomicBoolean(false);
+//            this.targetActions.forEach(
+//                (trigger, actionSet) -> {
+//                    if (exceptionThrown.get()){
+//                        return;
+//                    }
+//                    actionSet.forEach(
+//                        action -> {
+//                            if (exceptionThrown.get()) {
+//                                return;
+//                            }
+//                            try {
+//                                checkRequiredEntities(action.getRequiredEntities());
+//                            } catch (GameException e) {
+//                                System.out.println("HERE ");
+//                                exceptionThrown.set(true);
+//                            }
+//                        });
+//                        if (actionSet.isEmpty()) {
+//                            triggersToRemove.add(trigger);
+//                        }
+//                        else if (actionSet.size() > 1) {
+//                            try {
+//                                throw new GameException.ExactlyOneCommandException();
+//                            } catch (GameException.ExactlyOneCommandException e) {
+//                                exceptionThrown.set(true);
+//                            }
+//                        }
+//                        else {
+//                            uniqueActions.addAll(actionSet);
+//                        }
+//                    if (exceptionThrown.get()){
+//                        return;
 //                    }
 //                }
-//                triggersToRemove.forEach(
-//                        targetActions::remove
-//                );
+//            );
+//            if (!exceptionThrown.get()) {
+//                triggersToRemove.forEach(targetActions::remove);
 //                executeAction(uniqueActions);
 //            }
 //        }
-//    }
+        return this.responseString;
+    }
+
+    public void handleActions() throws GameException {
+        final HashSet<GameAction> uniqueActions = new HashSet<>();
+        final HashSet<String> triggersToRemove = new HashSet<>();
+        final AtomicBoolean exceptionThrown = new AtomicBoolean(false);
+        this.targetActions.forEach(
+            (trigger, actionSet) -> {
+                if (exceptionThrown.get()){
+                    return;
+                }
+                actionSet.forEach(
+                    action -> {
+                        if (exceptionThrown.get()) {
+                            return;
+                        }
+                        try {
+                            checkRequiredEntities(action.getRequiredEntities());
+                        } catch (GameException e) {
+                            exceptionThrown.set(true);
+                        }
+                    });
+                    if (actionSet.isEmpty()) {
+                        triggersToRemove.add(trigger);
+                    }
+                    else if (actionSet.size() > 1) {
+                        exceptionThrown.set(true);
+//                        try {
+//                            throw new GameException.ExactlyOneCommandException();
+//                        } catch (GameException.ExactlyOneCommandException e) {
+//                            exceptionThrown.set(true);
+//                        }
+                    }
+                    else {
+                        uniqueActions.addAll(actionSet);
+                    }
+                if (exceptionThrown.get()){
+                    return;
+                }
+            }
+        );
+        if (!exceptionThrown.get()) {
+            triggersToRemove.forEach(targetActions::remove);
+            executeAction(uniqueActions);
+        }
+    }
 
 
     /**
@@ -315,8 +331,8 @@ public class UserCommandHandler {
      * to the storeroom.
      */
     public void consumeEntity(final GameEntity entity) {
-        addToResponseString("CONSUMING: "+entity.getName());
-        System.out.println("CONSUMOING: "+entity.getName());
+//        addToResponseString("CONSUMING: "+entity.getName());
+//        System.out.println("CONSUMOING: "+entity.getName());
         if ("health".equalsIgnoreCase(entity.getName())){
             this.getCurrentPlayer().decreasePlayerHealth();
             addToResponseString("Your health was decreased.");
@@ -328,8 +344,8 @@ public class UserCommandHandler {
             this.getCurrentPlayer().removeFromInventory((Artefact) entity);
         }
         if (entity instanceof Location){
-            System.out.println("REMOVING PATH ");
-            addToResponseString("REMOVED PATH TO "+entity.getName());
+//            System.out.println("REMOVING PATH ");
+//            addToResponseString("REMOVED PATH TO "+entity.getName());
             currLocation.removePath(entity.getName());
         }
         currLocation.removeEntity(entity.getName());
@@ -392,9 +408,9 @@ public class UserCommandHandler {
      */
     public boolean singleTargetLocation(){
         if (this.targetLocations.size()==1){
-            return this.targetCharacters.isEmpty()
+            return (this.targetCharacters.isEmpty()
                     && this.targetArtefacts.isEmpty()
-                    && this.targetFurniture.isEmpty();
+                    && this.targetFurniture.isEmpty());
         }
         else {
             return false;
@@ -407,9 +423,9 @@ public class UserCommandHandler {
      */
     public boolean singleTargetArtefact(){
         if (this.targetArtefacts.size()==1){
-            return this.targetCharacters.isEmpty()
+            return (this.targetCharacters.isEmpty()
                     && this.targetLocations.isEmpty()
-                    && this.targetFurniture.isEmpty();
+                    && this.targetFurniture.isEmpty());
         }
         return false;
     }
@@ -660,4 +676,24 @@ public class UserCommandHandler {
         final ArrayList<Artefact> list = new ArrayList<>(targetSet);
         return list.get(0);
     }
+
+    public HashMap<String,GameEntity> getTargetEntities(){
+        HashMap<String, GameEntity> temp = new HashMap<>();
+        this.targetArtefacts.forEach(
+                item -> temp.put(item.getName(),item)
+        );
+        this.targetLocations.forEach(
+                item -> temp.put(item.getName(),item)
+        );
+        this.targetFurniture.forEach(
+                item -> temp.put(item.getName(),item)
+        );
+        this.targetCharacters.forEach(
+                item -> temp.put(item.getName(),item)
+        );
+        return temp;
+    }
+
+
 }
+

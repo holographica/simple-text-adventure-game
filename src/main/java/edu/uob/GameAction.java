@@ -141,7 +141,6 @@ public class GameAction {
         }
         final Location location = GameState.getLocationByName(entityName);
         if (location != null){
-            System.out.println("ADDED: "+entityName);
             this.consumedEntities.add(location);
         }
         if ("health".equalsIgnoreCase(entityName)){

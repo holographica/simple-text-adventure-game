@@ -30,9 +30,9 @@ public class EntityParser {
         } catch (IOException | ParseException e ) {
             System.out.println(e.getMessage());
         }
-        Graph entitiesGraph = parser.getGraphs().get(0);
-        Graph locationGraph = entitiesGraph.getSubgraphs().get(0);
-        Graph pathGraph = entitiesGraph.getSubgraphs().get(1);
+        final Graph entitiesGraph = parser.getGraphs().get(0);
+        final Graph locationGraph = entitiesGraph.getSubgraphs().get(0);
+        final Graph pathGraph = entitiesGraph.getSubgraphs().get(1);
         parseLocations(locationGraph);
         addPathsToLocations(pathGraph);
         GameParser.gameState.setEntityList(this.getEntityList());
@@ -40,8 +40,8 @@ public class EntityParser {
 
     public void parseLocations(Graph locationGraph){
         boolean isFirst = false;
-        for (Graph location: locationGraph.getSubgraphs()){
-            Location newLocation = new Location(location.getNodes(false).get(0));
+        for (final Graph location: locationGraph.getSubgraphs()){
+            final Location newLocation = new Location(location.getNodes(false).get(0));
             if (!isFirst){
                 isFirst=true;
                 GameParser.gameState.setStartLocation(newLocation);
@@ -54,13 +54,13 @@ public class EntityParser {
     }
 
     public void addPathsToLocations(Graph pathGraph){
-        HashMap<String, Location> locationMap = new HashMap<>();
+        final HashMap<String, Location> locationMap = new HashMap<>();
         GameParser.gameState.getLocations().values().forEach(
                 location -> locationMap.put(location.getName(), location));
         pathGraph.getEdges().forEach(
                 edge -> {
-                    String source = edge.getSource().getNode().getId().getId();
-                    Location target = new Location(edge.getTarget().getNode());
+                    final String source = edge.getSource().getNode().getId().getId();
+                    final Location target = new Location(edge.getTarget().getNode());
                     locationMap.get(source).addPath(target);
                 }
         );

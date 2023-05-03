@@ -72,7 +72,7 @@ final class HandleBasicCommandTests {
 
     @Test public void testParseGoto() {
         String response = sendCommandToServer("chris: look");
-        assertTrue(response.contains("You are currently in: cabin"));
+        assertTrue(response.contains("You are currently in: cabin"),response);
         Player currPlayer = server.getGameState().getCurrentPlayer();
         assertEquals("cabin", currPlayer.getCurrentLocation(), "Current player location should be cabin");
 

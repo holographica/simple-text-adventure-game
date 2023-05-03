@@ -44,7 +44,7 @@ public class Player extends GameCharacter{
         }
         else {
             this.playerHealth=3;
-            Location currLocation = GameState.getLocationByName(getCurrentLocation());
+            final Location currLocation = GameState.getLocationByName(getCurrentLocation());
             if (!this.inventory.isEmpty()) {
                 this.inventory.values().forEach(
                         currLocation::addArtefact
@@ -52,7 +52,7 @@ public class Player extends GameCharacter{
                 this.inventory = new HashMap<>();
             }
             currLocation.removeEntity(this.getName());
-            Location startLocation = GameState.getStartLocation();
+            final Location startLocation = GameState.getStartLocation();
             startLocation.addEntity(this);
             this.setCurrentLocation(startLocation.getName());
         }
