@@ -8,8 +8,16 @@ public abstract class GameEntity
     private String description;
 
     public GameEntity(Node newEntity){
-        this.setName(newEntity.getId().getId().toLowerCase());
-        this.setDescription(newEntity.getAttribute("description").toLowerCase());
+        this.setName(newEntity.getId().getId());
+        // TODO
+        //  CHANGED THIS SO ITS NOT LOWERCASE
+        //   MAKE SURE TO CHANGE BACK AFTER CHECKING!!!
+
+
+
+
+        //  !!!!!
+        this.setDescription(newEntity.getAttribute("description"));
     };
 
     public GameEntity(String name, String description)

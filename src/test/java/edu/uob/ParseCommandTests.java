@@ -57,25 +57,25 @@ public class ParseCommandTests {
         assertTrue(response.contains("You are currently in:"));
         assertTrue(response.contains("You can see:"));
         assertTrue(response.contains("You can see paths to:"));
-        assertTrue(response.contains("cabin - a log cabin in the woods"));
-        assertTrue(response.contains("potion - a bottle of magic potion"));
-        assertTrue(response.contains("axe - a razor sharp axe"));
+        assertTrue(response.contains("cabin - A log cabin in the woods"));
+        assertTrue(response.contains("potion - A bottle of magic potion"));
+        assertTrue(response.contains("axe - A razor sharp axe"));
         assertTrue(response.contains("forest"));
-        assertTrue(response.contains("coin - a silver coin"));
-        assertTrue(response.contains("trapdoor - a locked wooden trapdoor in the floor"));
+        assertTrue(response.contains("coin - A silver coin"));
+        assertTrue(response.contains("trapdoor - A locked wooden trapdoor in the floor"));
         assertFalse(response.contains("gold"));
         assertFalse(response.contains("shovel"));
         assertFalse(response.contains("riverbank"));
 
         sendCommandToServer("chris: get coin");
         response = sendCommandToServer("chris: look");
-        assertFalse(response.contains("coin - a silver coin"));
-        assertTrue(response.contains("axe - a razor sharp axe"));
+        assertFalse(response.contains("coin - A silver coin"));
+        assertTrue(response.contains("axe - A razor sharp axe"));
 
         response = sendCommandToServer("simon: look");
-        assertFalse(response.contains("coin - a silver coin"));
-        assertTrue(response.contains("axe - a razor sharp axe"));
-        assertTrue(response.contains("trapdoor - a locked wooden trapdoor in the floor"));
+        assertFalse(response.contains("coin - A silver coin"));
+        assertTrue(response.contains("axe - A razor sharp axe"));
+        assertTrue(response.contains("trapdoor - A locked wooden trapdoor in the floor"));
         assertFalse(response.contains("elf"));
         assertFalse(response.contains("riverbank"));
     }

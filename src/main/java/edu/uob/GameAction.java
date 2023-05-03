@@ -91,7 +91,9 @@ public class GameAction {
         if (foundEntity != (null)){
             this.consumedEntities.add(foundEntity);
         }
-        else {
+        else if (entityName.equalsIgnoreCase("health")) {
+
+        }
             // TODO remove this once working?
             System.out.println("Could not find consumed entity to add to action");
             System.out.println("name: "+entityName+ "\n");
