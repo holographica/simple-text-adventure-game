@@ -2,6 +2,7 @@ package edu.uob;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Locale;
 
 public class GameState {
     private static HashMap<String, Location> locations;
@@ -42,8 +43,7 @@ public class GameState {
     }
 
     public Player getPlayerByName(String playerName){
-        playerName = playerName.toLowerCase();
-        return this.playerList.get(playerName);
+        return this.playerList.get(playerName.toLowerCase());
     }
     public Player getCurrentPlayer(){
         return this.currentPlayer;

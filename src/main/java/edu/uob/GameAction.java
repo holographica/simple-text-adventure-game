@@ -3,15 +3,16 @@ package edu.uob;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 public class GameAction {
     private String narration;
-    private HashSet<String> triggers;
-    private HashSet<GameEntity> subjectEntities;
+    private Set<String> triggers;
+    private Set<GameEntity> subjectEntities;
 
     // for basic cmds these are target artefacts/locations/chars etc
-    private HashSet<GameEntity> consumedEntities;
-    private HashSet<GameEntity> producedEntities;
+    private Set<GameEntity> consumedEntities;
+    private Set<GameEntity> producedEntities;
     private boolean consumesHealth;
     private boolean producesHealth;
 
@@ -87,7 +88,7 @@ public class GameAction {
         if (foundEntity != (null)){
             this.consumedEntities.add(foundEntity);
         }
-        else if (entityName.equalsIgnoreCase("health")){
+        else if ("health".equalsIgnoreCase(entityName)){
             this.setConsumesHealth();
         }
     }
@@ -102,7 +103,7 @@ public class GameAction {
         if (foundEntity != (null)){
             this.producedEntities.add(foundEntity);
         }
-        else if (entityName.equalsIgnoreCase("health")) {
+        else if ("health".equalsIgnoreCase(entityName)) {
             this.setProducesHealth();
         }
     }

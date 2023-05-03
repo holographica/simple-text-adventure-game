@@ -2,25 +2,21 @@ package edu.uob;
 
 import com.alexmerz.graphviz.objects.Node;
 
-public abstract class GameEntity
+
+// TODO
+//   CHANGED THIS TO MAKE IT PROTECTED AND NOT ABSTRACT
+//   CHANGE BACK IF IT BREAKS
+public class GameEntity
 {
     private String name;
     private String description;
 
-    public GameEntity(Node newEntity){
+    protected GameEntity(Node newEntity){
         this.setName(newEntity.getId().getId());
-        // TODO
-        //  CHANGED THIS SO ITS NOT LOWERCASE
-        //   MAKE SURE TO CHANGE BACK AFTER CHECKING!!!
-
-
-
-
-        //  !!!!!
         this.setDescription(newEntity.getAttribute("description"));
-    };
+    }
 
-    public GameEntity(String name, String description)
+    protected GameEntity(String name, String description)
     {
         setName(name);
         setDescription(description);

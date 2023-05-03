@@ -20,17 +20,7 @@ public class UserCommandHandler {
 
     public UserCommandHandler(String command, GameState gameState) {
         this.gameState = gameState;
-
-        String[] splitCmd = command.toLowerCase().split(":",2);
-        this.currentPlayer = this.gameState.getPlayerByName(splitCmd[0]);
-        this.tokens = new ArrayList<>(Arrays.stream(splitCmd[1]
-            .split(" "))
-            .toList());
-        StringBuilder commandBuilder = new StringBuilder();
-        for (String token: this.tokens){
-            commandBuilder.append(token).append(" ");
-        }
-        this.command = commandBuilder.toString();
+        setTokens(command);
         this.targetCommands = new HashSet<>();
         this.targetArtefacts = new HashSet<>();
         this.targetCharacters = new HashSet<>();
@@ -43,11 +33,17 @@ public class UserCommandHandler {
         setAccessibleLocations();
     }
 
-    public HashMap<String, GameEntity> getAccessibleEntities(){
-        return this.accessibleEntities;
-    }
-    public HashMap<String, Location> getAccessibleLocations(){
-        return this.accessibleLocations;
+    public void setTokens(String command){
+        String[] splitCmd = command.toLowerCase().split(":",2);
+        this.currentPlayer = this.gameState.getPlayerByName(splitCmd[0]);
+        this.tokens = new ArrayList<>(Arrays.stream(splitCmd[1]
+                        .split(" "))
+                .toList());
+        StringBuilder commandBuilder = new StringBuilder();
+        for (String token: this.tokens){
+            commandBuilder.append(token).append(" ");
+        }
+        this.command = commandBuilder.toString();
     }
 
     public void checkRequiredEntities(HashMap<String,GameEntity> requiredEntities){
@@ -109,129 +105,53 @@ public class UserCommandHandler {
         return this.responseString;
     }
     public String parseCommand(){
-        // CHECK FOR BASIC COMMANDS AND ADD THEM TO BASIC COMMAND LIST
-        // IF LIST.SIZE == 1, CALL BASIC COMMAND HANDLER
-
-        // CHECK FOR ENTITIES, ADD THEM TO SUBJECT LIST
-
-        // CHECK FOR ACTION TRIGGERS, ADD THEM TO ACTION LIST
-        // IF NOT EMPTY - CALL ACTION HANDLER
-
-        // IF BASIC CMD LIST.SIZE == 1 && ACTION TRIGGER LIST.ISEMPTY:
-            // CALL BASIC CMD HANDLER
-        // IF BASIC CMD LIST.SIZE==1 && ACTION TRIGGER LIST !EMPTY:
-            // RETURN ERROR MSG - TOO MANY ACTIONS/COMMANDS
-        // IF BASIC CMD LIST.SIZE >1 :
-            // RETURN ERROR MSG - TOO MANY COMMANDS
-        // IF BASIC CMD LIST.ISEMPTY && ACTION LIST.SIZE ! EMPTY
-            // CALL ACTION HANDLER
-
         for (String token: getTokens()){
-
-            // first check whether token is a basic command
-            // if so, add to current list of basic commands
             checkForBasicCommand(token);
-
-            // next check if token is a valid entity
-            // if so, add to correct list of current subject entities
             checkIfEntity(token);
-
-            // TODO
-            // next check if token is a valid action trigger phrase
-            // ie matches any of the keys in actions hashmap
-            // if so, add all actions matching that trigger to set of target actions
             checkIfAction(token);
         }
         checkMultipleWordTriggers();
 
-//        System.out.println("actions: " + gameState.getActions());
-
-
         if (!targetCommands.isEmpty()) {
             System.out.println("at least 1 basic command");
             if (targetCommands.size() == 1 && targetActions.isEmpty()) {
-                    // call basic command handler
                 basicCommandHandler();
-
-                // return?
-                // do i return a string ie 'command executed successfully'?
-                // or results of executed command
-
+                return this.responseString;
             } else if (targetCommands.size() == 1){
-                    // abort
-                    // return error msg - too many commands/actions detected
-                    setResponseString("too many basic commands/actions detected");
-                    return responseString;
+                setResponseString("too many basic commands/actions detected");
+                return this.responseString;
             } else {
-                // abort
-                // return error msg - too many commands detected
                 setResponseString("too many basic commands detected");
-                return responseString;
+                return this.responseString;
             }
         }
 
         if (!targetActions.isEmpty()) {
-//            System.out.println("TARGET ACTIONS NOT EMPTY");
             HashSet<GameAction> uniqueActions = new HashSet<>();
             HashSet<String> triggersToRemove = new HashSet<>();
-            // go through each key in the hashmap
             this.targetActions.forEach(
                 (trigger, actionSet) -> {
-                    System.out.println("Started here");
-//                    System.out.println("trigger ie keyphrase: " + trigger + "  | actionset: "+ actionSet + "\n");
                     actionSet.forEach(
                         action -> {
                             checkRequiredEntities(action.getRequiredEntities());
                         }
                     );
                     if (actionSet.isEmpty()) {
-//                        System.out.println("empty set - removed " + trigger);
                         triggersToRemove.add(trigger);
                     }
-
                     else if (actionSet.size() > 1) {
                         setResponseString("Error: too many possible actions");
                     }
                     else {
-                        System.out.println("action set : " + actionSet);
                         uniqueActions.addAll(actionSet);
                     }
-//
-//
-//                    System.out.println("target actiohs size: " + targetActions.size());
-//                    for (String str: targetActions.keySet()){
-//                        System.out.println("key: "+str);
-//                    }
-//                    System.out.println("\n");
-
-                    // if action set size >1 , error, return
-                    // if set size ==0, remove from hashmap
-                    // if ==1, do nothing
                 }
             );
-
             triggersToRemove.forEach(
                     trigger -> targetActions.remove(trigger)
             );
             executeAction(uniqueActions);
-//            if (uniqueActions.size()==1){
-//                System.out.println("target actions size 1!!");
-//                executeAction(uniqueActions);
-//                // execute action!
-//                // TODO
-//                //  HANDLE ACTUALLY DOING THE ACTION
-//                //  IE: CALL FUNCTIONS!
-//
-//
-//                // execute action here
-//                // update gamestate
-//                // consume/produce objects as necessary
-//            }
-//            else {
-//                setResponseString("Error: valid commands require exactly one action");
-//            }
         }
-
         return this.responseString;
     }
 
@@ -268,7 +188,7 @@ public class UserCommandHandler {
     }
 
     public void consumeEntity(GameEntity entity) {
-        if (entity.getName().equalsIgnoreCase("health")){
+        if ("health".equalsIgnoreCase(entity.getName())){
             this.getCurrentPlayer().decreasePlayerHealth();
             addToResponseString("decreased health");
             return;
@@ -283,7 +203,7 @@ public class UserCommandHandler {
     }
 
     public void produceEntity(GameEntity entity) {
-        if (entity.getName().equalsIgnoreCase("health")) {
+        if ("health".equalsIgnoreCase(entity.getName())) {
             this.getCurrentPlayer().increasePlayerHealth();
             addToResponseString("increased health");
             return;
@@ -310,22 +230,6 @@ public class UserCommandHandler {
             return;
         }
         setResponseString("Error: invalid command detected");
-
-
-        // call specific command (look, goto etc) handler based on
-        // command found in basic cmd list
-
-        // in each basic cmd handler:
-            // check if any extraneous entities in entity list
-                // if so: abort, print error msg
-            // check if all required subjects are present
-                // if not: abort, print error msg
-            // check if consumed entities are present
-                // if not: abort, print error msg
-
-            // then: execute command
-            // ensure produced/consumed subjects are handled correctly
-            // and added/removed from correct lists / player inventory
     }
 
     public boolean noTargetEntities(){
@@ -468,7 +372,6 @@ public class UserCommandHandler {
         setResponseString(this.getResponseString() + toAppend);
     }
 
-
     public void setResponseString(String newString){
         this.responseString = newString;
     }
@@ -494,11 +397,6 @@ public class UserCommandHandler {
     public void checkMultipleWordTriggers(){
         gameState.getActions().forEach(
             (trigger, actionSet) -> {
-
-                // TODO
-                //  this currently checks for spaces in the triggers it's checking
-                //  so to avoid probs with 'cut' vs 'cut down'
-                //   might have to remove if it causes issues
                 if (command.contains(trigger) && trigger.contains(" ")){
                     if (this.targetActions.containsKey(trigger)){
                         setResponseString("Error: multiple actions found in command");
@@ -538,53 +436,4 @@ public class UserCommandHandler {
         ArrayList<Artefact> list = new ArrayList<>(targetSet);
         return list.get(0);
     }
-
-//    public String handleBasicCommand(){}
-
-//    public String handleLookCommand(){
-        // what is the command subject?
-        // check player current location, paths from location
-            // add these to hashmap/set
-        // if no subjects in command subject list:
-            // valid command - print description of current location
-        // if one valid, accessible location in cmd subject list:
-            // there MUST be a path to that location from curr location
-            // valid command - print desc of that location
-        // return error message if:
-            // location is not accessible
-            // command subjects contains any artefacts, chars, furniture
-
-
-//    }
-
-//    public String handleGotoCommand(){
-//        // CHECK FOR ACTION TRIGGER WORDS?
-//        // NOT HERE - PROB IN BASIC COMMAND CHECKER
-//
-//        // CHECK FOR EXTRANEOUS SUBJECTS?
-//
-//    }
-
-
-
-
-
-
-
-    // need to check string is valid?
-
-
-
-//    public void parseCommand(){
-//        if (!singlePlayer){
-//            // get token directly after the colon
-//            String
-//        }
-    }
-
-
-
-
-
-
-
+}

@@ -14,9 +14,9 @@ import java.util.List;
 
 /** This class implements the STAG server. */
 public final class GameServer {
-    private final File entitiesFile;
-    private final File actionsFile;
-    private GameState gameState;
+
+    // Object to hold the current game state
+    private final GameState gameState;
     private static final char END_OF_TRANSMISSION = 4;
     public static void main(String[] args) throws IOException {
         File entitiesFile = Paths.get("config" + File.separator + "extended-entities.dot").toAbsolutePath().toFile();
@@ -38,13 +38,9 @@ public final class GameServer {
     * @param actionsFile The game configuration file containing all game actions to use in your game
     *
     */
-    public GameServer(File entitiesFile, File actionsFile) {
-        this.entitiesFile = entitiesFile;
-        this.actionsFile = actionsFile;
-
-        GameParser gp = new GameParser(entitiesFile, actionsFile);
-//        gp.parseEntities();
-        this.gameState = gp.getGameState();
+    public GameServer(final File entitiesFile, final File actionsFile) {
+        final GameParser parser = new GameParser(entitiesFile, actionsFile);
+        this.gameState = parser.getGameState();
     }
 
     /**
@@ -54,25 +50,22 @@ public final class GameServer {
     * <p>This method handles all incoming game commands and carries out the corresponding actions.
     */
     public String handleCommand(String command) {
-
-        // set current player
-
-        // TODO
-        // CLEAN UP AND ENCAPSULATE BELOW INTO METHOD
-
-
-        StringBuilder strb = new StringBuilder();
-        List<String> temp = Arrays.stream(command.split(":")).toList();
-        strb.append(temp.get(0));
-        checkNewPlayer(strb.toString());
-
-        UserCommandHandler handler = new UserCommandHandler(command, this.gameState);
+        checkNewPlayer(command);
+        final UserCommandHandler handler = new UserCommandHandler(command, this.gameState);
         return handler.parseCommand();
     }
 
-    public void checkNewPlayer(String name){
+    /**
+     * Check whether current player is new.
+     * If so, add them as a new player.
+     */
+    public void checkNewPlayer(final String command){
+        final StringBuilder builder = new StringBuilder();
+        final List<String> temp = Arrays.stream(command.split(":")).toList();
+        builder.append(temp.get(0));
+        final String name = builder.toString();
         if (this.gameState.getPlayerByName(name)==null){
-            Player newPlayer = new Player(name, "Player called "+name);
+            final Player newPlayer = new Player(name, "Player called "+name);
             this.gameState.addPlayer(newPlayer);
             this.gameState.setCurrentPlayer(newPlayer);
         }
@@ -81,14 +74,9 @@ public final class GameServer {
         }
     }
 
-
     public GameState getGameState(){
         return this.gameState;
     }
-
-
-
-    //  === Methods below are there to facilitate server related operations. ===
 
     /**
     * Starts a *blocking* socket server listening for new connections. This method blocks until the
