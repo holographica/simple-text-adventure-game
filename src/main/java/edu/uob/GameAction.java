@@ -98,10 +98,9 @@ public class GameAction {
             System.out.println("Could not find consumed entity to add to action");
             System.out.println("name: "+entityName+ "\n");
         }
-    }
 
     public HashSet<GameEntity> getProducedEntities() {
-        return producedEntities;
+        return this.producedEntities;
     }
 
 
@@ -111,7 +110,7 @@ public class GameAction {
             this.producedEntities.add(foundEntity);
         }
         else {
-//            GameEntity
+
             // TODO remove this once working?
             System.out.println("Could not find produced entity to add to action");
             System.out.println("name: "+entityName+ "\n");

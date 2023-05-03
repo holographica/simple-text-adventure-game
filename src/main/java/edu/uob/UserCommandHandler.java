@@ -277,6 +277,7 @@ public class UserCommandHandler {
                     action.getProducedEntities().forEach(
                             entity -> {produceEntity(entity);}
                     );
+                    setResponseString(action.getNarration());
                 }
             );
         }
@@ -310,107 +311,6 @@ public class UserCommandHandler {
         newLocation.addEntity(entity);
     }
 
-        // move from current location (DOESNT MATTER WHERE)
-        // TO CURRENT LOCATION
-
-//            if (entity instanceof Artefact){
-//
-////            if (this.getCurrentPlayer().getInventory().containsKey(entity.getName())) {
-////                this.getCurrentPlayer().removeFromInventory((Artefact) entity);
-////            }
-//            if (currPlayer.getInventory().containsKey(entity.getName())) {
-//                currPlayer.removeFromInventory((Artefact) entity);
-//            }
-//            else if (currLocation.getAccessibleEntities().containsKey(entity.getName())) {
-//                currLocation.removeEntity(entity.getName());
-
-
-
-//    public void consumeArtefact(Artefact artefact, Location currLocation, Location storeroom){
-//        Player currPlayer = this.getCurrentPlayer();
-//        if (currPlayer.getInventory().containsKey(artefact.getName())){
-//            currPlayer.removeFromInventory(artefact);
-//        }
-//        else if (currLocation.getArtefacts().containsKey(artefact.getName())){
-//            currLocation.removeArtefact(artefact.getName());
-//        }
-//        storeroom.addArtefact(artefact);
-//    }
-//
-//    public void consumeCharacter(GameCharacter character, Location currLocation, Location storeroom){
-//        if (currLocation.getCharacters().containsKey(character.getName())){
-//            currLocation.removeCharacter(character.getName());
-//        }
-//        storeroom.addCharacter(character);
-//    }
-//
-//    public void consumeFurniture(Furniture furniture, Location currLocation, Location storeroom){
-//        if (currLocation.getFurniture().containsKey(furniture.getName())){
-//            currLocation.removeEntity(furniture.getName());
-//        }
-//        storeroom.addFurniture(furniture);
-//    }
-
-
-
-
-        // target actions will only contain 1 action
-
-
-        // HAVE ALREADY CHECKED THAT SUBJECTS ARE ACCESSIBLE
-        // SO:
-
-        // CONSUME STUFF
-        // PRODUCE STUFF
-        // UPDATE STUFF
-        // THATS IT????
-
-
-
-
-
-
-            // for each key, go through hashset
-            // for each action in set, check whether the required entities are accessible
-            // if they are not, remove this action from hashset
-
-            // if the ending set size >1, print error messsage, return
-
-            // if ending set size ==0 , remove key from hashmap
-
-            // if ending set size ==1: do nothing
-
-            // after going through all keys:
-                // if targetActions.size == 1:
-                // execute action
-                // update game state, player inv, consumed/produced subjects etc
-
-
-
-
-
-            // first make list of actions that target action triggers correspond to
-            // if size of list >1, abort and print error msg - too many actions
-            // otherwise if size of list ==1, this is fine
-                // execute action
-                // ensure game state, player inv, subjects consumed/produced
-                // are updated correctly
-
-        // if got to here: both basic cmd list and action lists are empty
-        // ==> abort, print error message
-
-//        System.out.println("\nGOT HERE : no command or action detected");
-
-
-        // now need to handle command based on rules:
-            // IF BASIC CMD LIST.SIZE == 1 && ACTION TRIGGER LIST.ISEMPTY:
-                // CALL BASIC CMD HANDLER
-            // IF BASIC CMD LIST.SIZE==1 && ACTION TRIGGER LIST !EMPTY:
-                // RETURN ERROR MSG - TOO MANY ACTIONS/COMMANDS
-            // IF BASIC CMD LIST.SIZE >1 :
-                // RETURN ERROR MSG - TOO MANY COMMANDS
-            // IF BASIC CMD LIST.ISEMPTY && ACTION LIST.SIZE ! EMPTY
-                // CALL ACTION HANDLER
 
 
     public void basicCommandHandler(){

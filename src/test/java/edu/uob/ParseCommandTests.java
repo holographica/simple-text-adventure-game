@@ -122,12 +122,16 @@ public class ParseCommandTests {
         assertFalse(response.contains("look"));
     }
 
-
     @Test
     public void testActionsSimple(){
         sendCommandToServer("chris: get axe");
         sendCommandToServer("chris: goto forest");
         String response = sendCommandToServer("chris: chop tree");
+
+        assertTrue(response.contains("You cut down the tree with the axe"));
+//        assertTrue(response.contains());
+//        response =
+
     }
 
 
