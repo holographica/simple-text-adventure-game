@@ -130,7 +130,7 @@ final class HandleActionTests {
         assertTrue(riverbank.getPaths().containsKey("clearing"),"Location should now contain a path to the clearing.");
         riverbank = server.getGameState().getLocations().get("riverbank");
         String response = sendCommandToServer("chris: burn");
-        assertTrue(response.contains("You burn the bridge"),"Response should contain correct action narration");
+        assertTrue(response.contains("You burn the bridge"),"Response should contain correct action narration"+response);
         assertFalse(riverbank.getPaths().containsKey("clearing"),"Location should no longer contain a path to the clearing.");
         sendCommandToServer("chris: goto clearing");
         assertNotEquals("clearing", player.getCurrentLocation(), "Location should no longer be accessible.");

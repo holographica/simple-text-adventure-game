@@ -3,11 +3,11 @@ package edu.uob;
 import java.util.*;
 
 /**
- * An abstract class that forms a base for the BasicCommandParser
- * and ActionParser classes. It contains necessary
+ * An abstract class that forms a base for the BasicCommandHandler
+ * and ActionHandler classes. It contains necessary
  * variables and methods that both classes need
  */
-public abstract class CommandParser {
+public abstract class CommandHandler {
 
     /**
      * A list of each word in the user input command.
@@ -18,11 +18,6 @@ public abstract class CommandParser {
      * A player object to hold details of the player executing the command.
      */
     protected Player currentPlayer;
-
-    /**
-     * A list of all built-in commands.
-     */
-    public static final String[] BASIC_COMMAND_LIST = {"inventory","inv","get","drop","goto","look","health"};
 
     /**
      * An object holding the current game state.
@@ -85,7 +80,7 @@ public abstract class CommandParser {
     /**
      * A constructor for the class which initialises class variables.
      */
-    public CommandParser(final String command, final GameState gameState) {
+    public CommandHandler(final String command, final GameState gameState) {
         this.gameState = gameState;
         this.tokens = Arrays.stream(command.split(" ")).toList();
         this.currentPlayer = gameState.getCurrentPlayer();
@@ -183,22 +178,5 @@ public abstract class CommandParser {
     public Artefact getArtefactHelper(final Set<Artefact> targetSet){
         final ArrayList<Artefact> list = new ArrayList<>(targetSet);
         return list.get(0);
-    }
-
-    public void createTargetSets(){
-        for (GameEntity e: targetEntities.values()){
-            if (e instanceof Artefact){
-                this.targetArtefacts.add((Artefact) e);
-            }
-            else if (e instanceof GameCharacter){
-                this.targetCharacters.add((GameCharacter) e);
-            }
-            else if (e instanceof Location){
-                this.targetLocations.add((Location) e);
-            }
-            else if (e instanceof Furniture){
-                this.targetFurniture.add((Furniture) e);
-            }
-        }
     }
 }

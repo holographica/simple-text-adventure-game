@@ -87,7 +87,6 @@ public class GameAction {
         return Objects.hash(triggers, subjectEntities, consumedEntities, producedEntities, narration);
     }
 
-
     public String getNarration(){
         return this.narration;
     }
@@ -156,7 +155,6 @@ public class GameAction {
         return new HashSet<>(this.producedEntities);
     }
 
-
     /**
      * A method to add an entity to the list of produced entities
      * for a given game action instance.
@@ -215,6 +213,4 @@ public class GameAction {
         );
         return new HashMap<>(requiredEntities);
     }
-
-
 }

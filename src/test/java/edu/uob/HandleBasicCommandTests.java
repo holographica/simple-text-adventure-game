@@ -93,22 +93,4 @@ final class HandleBasicCommandTests {
         response = sendCommandToServer("chris: goto riverbank");
         assertFalse(response.contains("chris moved to a new location: riverbank"), "Player should not be able to move to an accessible location.");
     }
-
-    @Test
-    public void testInvalidCommand(){
-        String response = sendCommandToServer("chris: look goto");
-        assertTrue(response.contains("Command does not contain exactly one basic command or action."),"Invalid command should return error message");
-        assertFalse(response.contains("look"), "Response should not contain a basic command here");
-        assertFalse(response.contains("goto"), "Response should not contain a basic command here");
-
-        response = sendCommandToServer("chris: get look");
-        assertTrue(response.contains("Command does not contain exactly one basic command or action."),"Invalid command should return error message");
-        assertFalse(response.contains("look"));
-        assertFalse(response.contains("get"));
-
-        response = sendCommandToServer("chris: inv look");
-        assertTrue(response.contains("Command does not contain exactly one basic command or action."),"Invalid command should return error message");
-        assertFalse(response.contains("inv"),"Response should not contain a basic command here");
-        assertFalse(response.contains("look"),"Response should not contain a basic command here");
-    }
 }

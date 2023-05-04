@@ -15,29 +15,37 @@ public class Player extends GameCharacter{
     public HashMap<String, Artefact> getInventory(){
         return this.inventory;
     }
+
     public String getCurrentLocation(){
         return this.currentLocation;
     }
+
     public String getPlayerHealth(){
         return Integer.toString(this.playerHealth);
     }
+
     public int getHealthAsInt(){
         return this.playerHealth;
     }
+
     public void addToInventory(Artefact newArtefact){
         this.inventory.put(newArtefact.getName(), newArtefact);
     }
+
     public void removeFromInventory(Artefact artefact){
         this.inventory.remove(artefact.getName());
     }
+
     public void setCurrentLocation(String newLocation){
         this.currentLocation = newLocation;
     }
+
     public void increasePlayerHealth(){
         if (playerHealth<3){
             this.playerHealth++;
         }
     }
+
     public void decreasePlayerHealth(){
         if (playerHealth>1){
             this.playerHealth--;

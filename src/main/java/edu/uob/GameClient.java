@@ -13,7 +13,6 @@ import java.net.Socket;
 * <p>Input are taken from stdin and output goes to stdout.
 */
 public final class GameClient {
-
     private static final char END_OF_TRANSMISSION = 4;
 
     public static void main(String[] args) throws IOException {

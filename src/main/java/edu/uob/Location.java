@@ -41,22 +41,18 @@ public class Location extends GameEntity {
      */
     public Map<String, Location> getPaths() {
         return new HashMap<>(this.pathsFromLocation);
-//        return this.pathsFromLocation;
     }
 
     public Map<String, Artefact> getArtefacts() {
         return new HashMap<>(this.artefacts);
-//        return this.artefacts;
     }
 
     public Map<String, GameCharacter> getCharacters() {
         return new HashMap<>(this.characters);
-//        return this.characters;
     }
 
     public Map<String, Furniture> getFurniture() {
         return new HashMap<>(this.furniture);
-//        return this.furniture;
     }
 
     /**
@@ -73,9 +69,6 @@ public class Location extends GameEntity {
         );
         this.getFurniture().values().forEach(
                 furniture -> accessibleEntities.put(furniture.getName(),furniture)
-        );
-        this.pathsFromLocation.values().forEach(
-                path -> accessibleEntities.put(path.getName(),path)
         );
         return accessibleEntities;
     }
@@ -180,6 +173,4 @@ public class Location extends GameEntity {
         this.furniture.remove(entityName);
         this.pathsFromLocation.remove(entityName);
     }
-
-
 }

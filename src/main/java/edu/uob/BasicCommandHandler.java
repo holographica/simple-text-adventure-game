@@ -2,37 +2,14 @@ package edu.uob;
 
 import java.util.*;
 
-public class BasicCommandParser extends CommandParser{
+public class BasicCommandHandler extends CommandHandler {
     private final Map<String, GameEntity> targetEntities;
 
-    public BasicCommandParser(String command, GameState gameState,Set<String> targetCommands, HashMap<String, GameEntity> targetEntities) {
+    public BasicCommandHandler(String command, GameState gameState, Set<String> targetCommands, HashMap<String, GameEntity> targetEntities) {
         super(command,gameState);
         this.targetCommands = new HashSet<>(targetCommands);
         this.targetEntities = new HashMap<>(targetEntities);
         createTargetSets();
-    }
-
-    public void createTargetSets(){
-        for (GameEntity e: targetEntities.values()){
-            if (e instanceof Artefact){
-                this.targetArtefacts.add((Artefact) e);
-            }
-            else if (e instanceof GameCharacter){
-                this.targetCharacters.add((GameCharacter) e);
-            }
-            else if (e instanceof Location){
-                this.targetLocations.add((Location) e);
-            }
-            else if (e instanceof Furniture){
-                this.targetFurniture.add((Furniture) e);
-            }
-        }
-    }
-
-    public void checkForBasicCommand(final String token){
-        if (Arrays.asList(BASIC_COMMAND_LIST).contains(token)){
-            targetCommands.add(token);
-        }
     }
 
     /**
@@ -52,7 +29,7 @@ public class BasicCommandParser extends CommandParser{
             handleSingleEntityCommand();
             return getResponseString();
         }
-        throw new GameException.InvalidBasicCommandException();
+        throw new GameException.NoValidContentException();
     }
 
     /**
@@ -93,23 +70,11 @@ public class BasicCommandParser extends CommandParser{
         return false;
     }
 
-    public <T extends GameEntity> void checkEntity(final String token, final Set<T> entitySet, final EntityChecker<T> entityChecker) throws GameException.DuplicateSubjectException {
-        final T entity = entityChecker.getEntityByName(token);
-        if (entity != null) {
-            if (entitySet.contains(entity)) {
-                throw new GameException.DuplicateSubjectException();
-            }
-            else {
-                entitySet.add(entity);
-            }
-        }
-    }
-
     /**
      * A helper method to handle basic commands
      * that have no subject entities.
      */
-    public void handleNoEntityCommand() throws GameException.InvalidBasicCommandException {
+    public void handleNoEntityCommand() throws GameException.NoValidContentException {
         if (targetCommands.contains("look")) {
             handleLook();
         } else if (targetCommands.contains("inv") || targetCommands.contains("inventory")) {
@@ -117,7 +82,7 @@ public class BasicCommandParser extends CommandParser{
         } else if (targetCommands.contains("health")) {
             handleHealth();
         } else {
-            throw new GameException.InvalidBasicCommandException();
+            throw new GameException.NoValidContentException();
         }
     }
 
@@ -131,10 +96,9 @@ public class BasicCommandParser extends CommandParser{
         } else if (targetCommands.contains("drop")) {
             handleGetDrop(false);
         } else {
-            throw new GameException.InvalidBasicCommandException();
+            throw new GameException.NoValidContentException();
         }
     }
-
 
     /**
      * A method to handle the built-in 'look' command,
@@ -193,9 +157,6 @@ public class BasicCommandParser extends CommandParser{
      * which moves the player to a designated location.
      */
     public void handleGoto() throws GameException {
-        if (!targetCommands.contains("goto")) {
-            throw new GameException.InvalidBasicCommandException();
-        }
         final Location targetLocation = getLocationHelper(this.targetLocations);
         if (tokens.indexOf("goto") > tokens.indexOf(targetLocation.getName())) {
             throw new GameException.InvalidCommandStructureException();
@@ -209,14 +170,11 @@ public class BasicCommandParser extends CommandParser{
     }
 
     /**
-     * A method to handle the built-in 'get' and 'drop' command,s
+     * A method to handle the built-in 'get' and 'drop' commands,
      * which respectively pick up or drop a designated artefact.
      */
     public void handleGetDrop(final boolean get) throws GameException {
         final String cmd = get ? "get" : "drop";
-        if (!targetCommands.contains(cmd)) {
-            throw new GameException.InvalidBasicCommandException();
-        }
         final Artefact targetArtefact = getArtefactHelper(this.targetArtefacts);
         if (tokens.indexOf(cmd) > tokens.indexOf(targetArtefact.getName())) {
             throw new GameException.InvalidCommandStructureException();
@@ -236,6 +194,23 @@ public class BasicCommandParser extends CommandParser{
             this.gameState.getCurrentPlayer().removeFromInventory(targetArtefact);
             currLocation.addArtefact(targetArtefact);
             setResponseString("You dropped a " + targetArtefact.getName());
+        }
+    }
+
+    public void createTargetSets(){
+        for (GameEntity e: targetEntities.values()){
+            if (e instanceof Artefact){
+                this.targetArtefacts.add((Artefact) e);
+            }
+            else if (e instanceof GameCharacter){
+                this.targetCharacters.add((GameCharacter) e);
+            }
+            else if (e instanceof Location){
+                this.targetLocations.add((Location) e);
+            }
+            else if (e instanceof Furniture){
+                this.targetFurniture.add((Furniture) e);
+            }
         }
     }
 }

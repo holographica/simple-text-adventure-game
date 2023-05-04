@@ -199,46 +199,4 @@ final class ParseEntitiesTests {
         assertEquals(tempEntity.getDescription(), "A deep hole in the ground");
 
     }
-
-
-
-        /*
-        Test that a character can move from one location to another by taking a path between them:
-
-        Start the game at the "cabin" location.
-        Move the character to the "forest" location.
-        Verify that the character is now at the "forest" location.
-        Test that a character can interact with an artifact:
-
-        Start the game at the "cabin" location.
-        Pick up the "axe" artifact.
-        Verify that the character has the "axe" in their inventory.
-        Test that a character can interact with furniture:
-
-        Start the game at the "cabin" location.
-        Open the "trapdoor" furniture.
-        Verify that the character can access the hidden room below.
-        Test that a character can interact with another character:
-
-        Start the game at the "cellar" location.
-        Talk to the "elf" character.
-        Verify that the character has completed the dialogue with the "elf".
-        Test that a character can complete a quest by interacting with multiple locations, artifacts, and characters:
-
-        Start the game at the "cabin" location.
-        Pick up the "key" artifact.
-        Move the character to the "forest" location.
-        Use the "key" to unlock the "tree" furniture.
-        Talk to the "lumberjack" character.
-        Pick up the "log" artifact.
-        Move the character to the "clearing" location.
-        Dig up the "ground" furniture using the "shovel" artifact.
-        Place the "log" in the "hole" furniture.
-        Use the "horn" artifact to call the hidden creature.
-        Verify that the quest is complete and the game has ended.
-         */
-
-
-
-
 }

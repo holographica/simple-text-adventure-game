@@ -12,12 +12,11 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 
-/** This class implements the STAG server. */
 public final class GameServer {
-
-    // Object to hold the current game state
     private final GameState gameState;
+
     private static final char END_OF_TRANSMISSION = 4;
+
     public static void main(String[] args) throws IOException {
         File entitiesFile = Paths.get("config" + File.separator + "extended-entities.dot").toAbsolutePath().toFile();
         File actionsFile = Paths.get("config" + File.separator + "test-actions.xml").toAbsolutePath().toFile();
@@ -28,40 +27,24 @@ public final class GameServer {
         server.handleCommand(command);
     }
 
-    /**
-    * KEEP this signature (i.e. {@code edu.uob.GameServer(File, File)}) otherwise we won't be able to mark
-    * your submission correctly.
-    *
-    * <p>You MUST use the supplied {@code entitiesFile} and {@code actionsFile}
-    *
-    * @param entitiesFile The game configuration file containing all game entities to use in your game
-    * @param actionsFile The game configuration file containing all game actions to use in your game
-    *
-    */
     public GameServer(final File entitiesFile, final File actionsFile) {
         final GameParser parser = new GameParser(entitiesFile, actionsFile);
         this.gameState = parser.getGameState();
     }
 
-    /**
-    * KEEP this signature (i.e. {@code edu.uob.GameServer.handleCommand(String)}) otherwise we won't be
-    * able to mark your submission correctly.
-    *
-    * <p>This method handles all incoming game commands and carries out the corresponding actions.
-    */
-    public String handleCommand(String command) {
+    public String handleCommand(String command)  {
         checkNewPlayer(command);
+        final UserCommandHandler handler = new UserCommandHandler(command, this.gameState);
         try {
-            final UserCommandHandler handler = new UserCommandHandler(command, this.gameState);
             return handler.parseCommand();
-        } catch (GameException ge){
-            return ge.getMessage();
+        } catch (Exception e) {
+           return e.getMessage();
         }
     }
 
     /**
-     * Check whether current player is new.
-     * If so, add them as a new player.
+     * Checks whether current player is new.
+     * If so, adds them as a new player.
      */
     public void checkNewPlayer(final String command){
         final StringBuilder builder = new StringBuilder();
@@ -82,16 +65,6 @@ public final class GameServer {
         return this.gameState;
     }
 
-    /**
-    * Starts a *blocking* socket server listening for new connections. This method blocks until the
-    * current thread is interrupted.
-    *
-    * <p>This method isn't used for marking. You shouldn't have to modify this method, but you can if
-    * you want to.
-    *
-    * @param portNumber The port to listen on.
-    * @throws IOException If any IO related operation fails.
-    */
     public void blockingListenOn(int portNumber) throws IOException {
         try (ServerSocket s = new ServerSocket(portNumber)) {
             System.out.println("Server listening on port " + portNumber);
@@ -105,15 +78,6 @@ public final class GameServer {
         }
     }
 
-    /**
-    * Handles an incoming connection from the socket server.
-    *
-    * <p>This method isn't used for marking. You shouldn't have to modify this method, but you can if
-    * * you want to.
-    *
-    * @param serverSocket The client socket to read/write from.
-    * @throws IOException If any IO related operation fails.
-    */
     private void blockingHandleConnection(ServerSocket serverSocket) throws IOException {
         try (Socket s = serverSocket.accept();
         BufferedReader reader = new BufferedReader(new InputStreamReader(s.getInputStream()));

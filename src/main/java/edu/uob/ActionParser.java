@@ -44,9 +44,9 @@ public class ActionParser {
         } catch (ParserConfigurationException pce) {
             System.out.println("ParserConfigurationException was thrown when attempting to read basic actions file");
         } catch (SAXException saxe) {
-            System.out.println("SAXException was thrown when attempting to read basic actions file");
+            System.out.println("SAXException was thrown when attempting to read actions file");
         } catch (IOException ioe) {
-            System.out.println("IOException was thrown when attempting to read basic actions file");
+            System.out.println("IOException was thrown when attempting to read actions file");
         }
     }
 

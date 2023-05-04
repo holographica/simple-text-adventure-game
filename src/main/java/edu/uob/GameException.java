@@ -16,13 +16,6 @@ public class GameException extends Exception {
         }
     }
 
-//    public static class MultipleBasicCommandsException extends GameException {
-//        @Serial private static final long serialVersionUID = 1;
-//        public MultipleBasicCommandsException() {
-//            super("Command contains multiple basic commands.");
-//        }
-//    }
-
     public static class InvalidCommandStructureException extends GameException {
         @Serial private static final long serialVersionUID = 1;
         public InvalidCommandStructureException() {
@@ -30,17 +23,10 @@ public class GameException extends Exception {
         }
     }
 
-    public static class InvalidBasicCommandException extends GameException {
+    public static class NoValidContentException extends GameException {
         @Serial private static final long serialVersionUID = 1;
-        public InvalidBasicCommandException() {
-            super("Input command contains an invalid basic command.");
-        }
-    }
-
-    public static class InvalidSubjectException extends GameException {
-        @Serial private static final long serialVersionUID = 1;
-        public InvalidSubjectException() {
-            super("Input command contains a subject that doesn't match the chosen action or basic command");
+        public NoValidContentException() {
+            super("Input command didn't contain any valid entities, commands or actions.");
         }
     }
 
@@ -64,13 +50,4 @@ public class GameException extends Exception {
             super("Command contains duplicate subjects.");
         }
     }
-
-    public static class NoCommandException extends GameException {
-        @Serial private static final long serialVersionUID = 1;
-        public NoCommandException() {
-            super("No basic commands or actions were found in input command.");
-        }
-    }
-
-
 }

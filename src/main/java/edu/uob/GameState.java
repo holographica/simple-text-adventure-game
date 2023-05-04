@@ -47,6 +47,7 @@ public class GameState {
     public Player getPlayerByName(String playerName){
         return this.playerList.get(playerName.toLowerCase());
     }
+
     public Player getCurrentPlayer(){
         return this.currentPlayer;
     }
@@ -54,6 +55,7 @@ public class GameState {
     public static Location getStartLocation(){
         return startLocation;
     }
+
     public static <T extends GameEntity> HashMap<String, T> getEntitiesByType(Class<T> type) {
         final HashMap<String, T> entitiesByType = new HashMap<>();
         entityList.values().forEach(entity -> {
@@ -91,23 +93,13 @@ public class GameState {
     public void addLocation(Location newLocation){
         locations.put(newLocation.getName(),newLocation);
     }
+
     public void addPlayer(Player newPlayer){
         this.playerList.put(newPlayer.getName(), newPlayer);
     }
+
     public void setCurrentPlayer(Player currPlayer){
         this.currentPlayer = currPlayer;
-    }
-
-    // TODO
-    //  when do i use this? during look command?
-    //  need to finish and use it somewhere as no usage currently
-    public HashMap<String, Player> getOtherPlayersAtLocation(){
-        HashMap<String, Player> otherPlayers = new HashMap<>();
-        playerList.values().forEach(
-                player -> otherPlayers.put(player.getName(), player)
-        );
-        otherPlayers.remove(this.currentPlayer.getName());
-        return otherPlayers;
     }
 
     public void setStartLocation(Location location){

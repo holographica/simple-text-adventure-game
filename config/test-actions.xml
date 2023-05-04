@@ -59,13 +59,14 @@
             <keyphrase>burn</keyphrase>
         </triggers>
         <subjects>
+            <entity>riverbank</entity>
         </subjects>
         <consumed>
             <entity>clearing</entity>
         </consumed>
         <produced>
         </produced>
-        <narration>You burn the bridge</narration>
+        <narration>You burn the bridge, destroying the path to the other side</narration>
     </action>
 
     <action>

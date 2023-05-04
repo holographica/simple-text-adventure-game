@@ -3,7 +3,6 @@ package edu.uob;
 import com.alexmerz.graphviz.ParseException;
 import com.alexmerz.graphviz.Parser;
 import com.alexmerz.graphviz.objects.Graph;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -27,8 +26,10 @@ public class EntityParser {
     public void parseEntities() {
         try (BufferedReader reader = new BufferedReader(new FileReader(this.entitiesFile))) {
             parser.parse(reader);
-        } catch (IOException | ParseException e ) {
-            System.out.println(e.getMessage());
+        } catch (IOException ioe) {
+            System.out.println("IOException was thrown when attempting to read entities file");
+        } catch (ParseException pe) {
+            System.out.println("ParseException was thrown when attempting to read entities file");
         }
         final Graph entitiesGraph = parser.getGraphs().get(0);
         final Graph locationGraph = entitiesGraph.getSubgraphs().get(0);
@@ -106,5 +107,4 @@ public class EntityParser {
     public void addEntityToList(GameEntity entity){
         this.entityList.put(entity.getName(), entity);
     }
-
 }
