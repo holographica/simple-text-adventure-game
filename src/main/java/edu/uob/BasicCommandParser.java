@@ -3,7 +3,6 @@ package edu.uob;
 import java.util.*;
 
 public class BasicCommandParser extends CommandParser{
-
     private final Map<String, GameEntity> targetEntities;
 
     public BasicCommandParser(String command, GameState gameState,Set<String> targetCommands, HashMap<String, GameEntity> targetEntities) {
@@ -54,22 +53,6 @@ public class BasicCommandParser extends CommandParser{
             return getResponseString();
         }
         throw new GameException.InvalidBasicCommandException();
-    }
-
-    /**
-     * A helper method that gets the first location in a set.
-     */
-    public Location getLocationHelper(final Set<Location> targetSet) {
-        final ArrayList<Location> list = new ArrayList<>(targetSet);
-        return list.get(0);
-    }
-
-    /**
-     * A helper method that gets the first artefact in a set.
-     */
-    public Artefact getArtefactHelper(final Set<Artefact> targetSet) {
-        final ArrayList<Artefact> list = new ArrayList<>(targetSet);
-        return list.get(0);
     }
 
     /**

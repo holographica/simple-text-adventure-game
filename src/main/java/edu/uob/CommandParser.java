@@ -10,11 +10,6 @@ import java.util.*;
 public abstract class CommandParser {
 
     /**
-     * A string holding the command taken from user input.
-     */
-    private String command;
-
-    /**
      * A list of each word in the user input command.
      */
     protected List<String> tokens;
@@ -60,6 +55,11 @@ public abstract class CommandParser {
     protected final Set<Location> targetLocations;
 
     /**
+     * A mapping of all target entities found in the user command.
+     */
+    protected Map<String, GameEntity> targetEntities;
+
+    /**
      * A mapping of all entities accessible to the player
      * to the entity names.
      */
@@ -75,7 +75,7 @@ public abstract class CommandParser {
      * A mapping of each trigger phrase detected in the user command
      * to a set of the game actions to which they correspond.
      */
-    protected final Map<String, Set<GameAction>> targetActions;
+    protected Map<String, Set<GameAction>> targetActions;
 
     /**
      * A string to contain the response that will be shown to the player.
@@ -87,7 +87,6 @@ public abstract class CommandParser {
      */
     public CommandParser(final String command, final GameState gameState) {
         this.gameState = gameState;
-        this.command = command;
         this.tokens = Arrays.stream(command.split(" ")).toList();
         this.currentPlayer = gameState.getCurrentPlayer();
         this.targetCommands = new HashSet<>();
@@ -95,6 +94,7 @@ public abstract class CommandParser {
         this.targetCharacters = new HashSet<>();
         this.targetFurniture = new HashSet<>();
         this.targetLocations = new HashSet<>();
+        this.targetEntities = new HashMap<>();
         this.accessibleEntities = new HashMap<>();
         this.accessibleLocations = new HashMap<>();
         this.targetActions = new HashMap<>();
@@ -139,13 +139,6 @@ public abstract class CommandParser {
     }
 
     /**
-     * A method that returns a list of tokens from the user command..
-     */
-    protected List<String> getTokens() {
-        return new ArrayList<>(this.tokens);
-    }
-
-    /**
      * A method that returns the current player.
      */
     protected Player getCurrentPlayer() {
@@ -177,16 +170,6 @@ public abstract class CommandParser {
     }
 
     /**
-     * A helper method that takes a token from user input
-     * and checks whether it is found in the list of built-in commands.
-     */
-    public void checkForBasicCommand(final String token){
-        if (Arrays.asList(BASIC_COMMAND_LIST).contains(token)){
-            targetCommands.add(token);
-        }
-    }
-
-    /**
      * A helper method that gets the first location in a set.
      */
     public Location getLocationHelper(final Set<Location> targetSet) {
@@ -202,63 +185,20 @@ public abstract class CommandParser {
         return list.get(0);
     }
 
-    public HashMap<String,GameEntity> getTargetEntities(){
-        HashMap<String, GameEntity> temp = new HashMap<>();
-        this.targetArtefacts.forEach(
-                item -> temp.put(item.getName(),item)
-        );
-        this.targetLocations.forEach(
-                item -> temp.put(item.getName(),item)
-        );
-        this.targetFurniture.forEach(
-                item -> temp.put(item.getName(),item)
-        );
-        this.targetCharacters.forEach(
-                item -> temp.put(item.getName(),item)
-        );
-        return temp;
-    }
-
-    /**
-     * A helper method that takes a possible trigger phrase,
-     * and checks whether it corresponds to any game actions.
-     */
-    public void checkIfAction(final String triggerPhrase) throws GameException.MultipleActionException {
-        if (this.gameState.getActions().containsKey(triggerPhrase)){
-            if (targetActions.containsKey(triggerPhrase)){
-                throw new GameException.MultipleActionException();
+    public void createTargetSets(){
+        for (GameEntity e: targetEntities.values()){
+            if (e instanceof Artefact){
+                this.targetArtefacts.add((Artefact) e);
             }
-            else {
-                targetActions.put(triggerPhrase, gameState.getActions().get(triggerPhrase));
+            else if (e instanceof GameCharacter){
+                this.targetCharacters.add((GameCharacter) e);
+            }
+            else if (e instanceof Location){
+                this.targetLocations.add((Location) e);
+            }
+            else if (e instanceof Furniture){
+                this.targetFurniture.add((Furniture) e);
             }
         }
     }
-
-    /**
-     * A helper method that checks the user input
-     * for the possible presence of multi-word action trigger phrases.
-     */
-    public void checkMultipleWordTriggers(){
-        gameState.getActions().forEach(
-            (trigger, actionSet) -> {
-                if (command.contains(trigger) && trigger.contains(" ")){
-                    if (this.targetActions.containsKey(trigger)){
-                        handleMultipleActionException();
-                    }
-                    else {
-                        this.targetActions.put(trigger, gameState.getActionsByTrigger(trigger));
-                    }
-                }
-            }
-        );
-    }
-
-    private void handleMultipleActionException() {
-        try {
-            throw new GameException.MultipleActionException();
-        } catch (GameException.MultipleActionException e) {
-            setResponseString(e.getMessage());
-        }
-    }
-
 }
